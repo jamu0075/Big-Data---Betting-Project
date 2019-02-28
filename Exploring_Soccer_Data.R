@@ -42,3 +42,16 @@ series_premier_bet365
 
 #### Create some features for premier league bet365####
 bet365 <- fread("series_premier_league_bet365.csv")
+bet365 <- bet365 %>% 
+              mutate(home_opening = home_b9_71) %>%
+              mutate(home_closing = home_b9_0) %>%
+              mutate(draw_opening = draw_b9_71) %>%
+              mutate(draw_closing = draw_b9_0) %>%
+              mutate(away_opening = away_b9_71) %>%
+              mutate(away_closing = away_b9_0) %>%
+              mutate(home_opening_minus_closing = home_opening - home_closing) %>%
+              mutate(draw_opening_minus_closing = draw_opening - draw_closing) %>%
+              mutate(away_opening_minus_closing = away_opening - away_closing) 
+
+# reorder columns
+#df %>% select(var, everything())
