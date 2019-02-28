@@ -42,7 +42,8 @@ series_premier_bet365
 
 #### Create some features for premier league bet365####
 bet365 <- fread("series_premier_league_bet365.csv")
-bet365 <- bet365 %>% 
+bet365 <- bet365 %>%
+  mutate(outcome = if_else(score_home >= score_away, if_else(score_home == score_away, "draw", "home"), "away")) %>%
   mutate(home_opening = home_b9_71) %>%
   mutate(home_closing = home_b9_0) %>%
   mutate(draw_opening = draw_b9_71) %>%
@@ -51,32 +52,39 @@ bet365 <- bet365 %>%
   mutate(away_closing = away_b9_0) %>%
   mutate(home_opening_minus_closing = home_opening - home_closing) %>%
   mutate(draw_opening_minus_closing = draw_opening - draw_closing) %>%
-  mutate(away_opening_minus_closing = away_opening - away_closing)
-home <- bet365 %>% select(c(7:78))
-draw <- bet365 %>% select(c(79:150))
-away <- bet365 %>% select(c(151:222))
-home <- home %>% 
-  rowwise() %>% 
-  mutate(home_min = min(get(colnames(home)))) 
-home <- home %>%
-  rowwise() %>%
-  mutate(home_max = max(get(colnames(home))))
-home <- home %>%
-  mutate(home_range = home_max - home_min) %>%
-  ungroup()
-draw <- draw %>% 
-  rowwise() %>% 
-  mutate(draw_min = min(get(colnames(draw)))) %>%
-  mutate(draw_max = max(get(colnames(draw)))) %>%
-  mutate(draw_range = draw_max - draw_min) %>%
-  ungroup()
-away <- away %>% 
-  rowwise() %>% 
-  mutate(away_min = min(get(colnames(away)))) %>%
-  mutate(away_max = max(get(colnames(away)))) %>%
-  mutate(away_range = away_max - away_min) %>%
-  ungroup()
-# reorder columns
-#df %>% select(var, everything())
+  mutate(away_opening_minus_closing = away_opening - away_closing) %>%
+  mutate(closing_odds_outcome = if_else(outcome %in% c("home", "draw"), (if_else(outcome == "home", home_closing, draw_closing)), away_closing))
 
+df <- bet365 %>% select(c(7:78))
+min <- apply(df, 1, FUN = min)
+max <- apply(df, 1, FUN = max)
+range <- max - min
+bet365 <- bet365 %>% 
+  mutate(home_min = min) %>%
+  mutate(home_max = max) %>%
+  mutate(home_range = range)
+
+df <- bet365 %>% select(c(79:150))
+min <- apply(df, 1, FUN = min)
+max <- apply(df, 1, FUN = max)
+range <- max - min
+bet365 <- bet365 %>% 
+  mutate(draw_min = min) %>%
+  mutate(draw_max = max) %>%
+  mutate(draw_range = range)
+
+df <- bet365 %>% select(c(151:222))
+min <- apply(df, 1, FUN = min)
+max <- apply(df, 1, FUN = max)
+range <- max - min
+bet365 <- bet365 %>% 
+  mutate(away_min = min) %>%
+  mutate(away_max = max) %>%
+  mutate(away_range = range)
+
+
+# reorder columns
+bet365_short <- bet365 %>% 
+  select(c(1:4, "outcome", "closing_odds_outcome", (242-18):242))
+#write.csv(bet365_short, file = "bet365_outcome_features.csv")
 
