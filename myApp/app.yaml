@@ -1,7 +1,0 @@
-runtime: python37
-
-env_variables:
-    MYSQL_DSN: myql:unix_socket=/cloudsql/beating-the-bookie:us-central1:btb-1;dbname=myFirstDB
-    MYSQL_USER: root
-    MYSQL_PASSWORD: 'IHSRBDBPassword'
-    MYSQL_NAME: 'MyFirstDB'
