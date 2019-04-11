@@ -5,8 +5,9 @@
     <div class="input-group-prepend">
       <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Team 1</button>
       <div class="dropdown-menu">
-        <a class="dropdown-item" href="#">Team 1</a>
-        <a class="dropdown-item" href="#">Team 2</a>
+        {% for team in teams %}
+          <a class="dropdown-item" href="#">{{ team.name }}</a>
+        {% endfor %}
       </div>
     </div>
     <input type="text" class="form-control" aria-label="Text input with dropdown button">
@@ -15,8 +16,9 @@
     <div class="input-group-prepend">
       <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Team 2</button>
       <div class="dropdown-menu">
-        <a class="dropdown-item" href="#">Team 1</a>
-        <a class="dropdown-item" href="#">Team 2</a>
+        {% for team in teams %}
+          <a class="dropdown-item" href="#">{{ team.other }}</a>
+        {% endfor %}
       </div>
     </div>
     <input type="text" class="form-control" aria-label="Text input with dropdown button">
