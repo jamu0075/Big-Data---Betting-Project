@@ -6,6 +6,12 @@
 * Nick Varberg
 * Jacob Munoz
 
+## Local Development
+1. cd into **eb-btb-flask**
+2. Activate the virtual environment to prevent version conflicts
+'''
+source virt/bin/activate
+'''
 ## Project Summary
 
 ## Current Deployment Link
