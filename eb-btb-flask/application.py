@@ -5,10 +5,22 @@ import pymysql
 # EB looks for an 'app' callable by default.
 app = Flask(__name__)
 
+#Temp data to emulate database response data
+teams = [
+    {
+        'name': 'Team 1',
+        'other': 'Something'
+    },
+    {
+        'name': 'Team 2',
+        'other': 'Something Else'
+    }
+]
+
 @app.route("/")
 @app.route("/home")
 def home():
-    return render_template('home.html')
+    return render_template('home.html', teams=teams)
 
 @app.route("/about")
 def about():
