@@ -1,6 +1,7 @@
 library(data.table)
 library(dplyr)
 library(tidyr)
+library(stringr)
 data_path <- "/Users/nickvarberg/Downloads/beat-the-bookie-odds-series-football-dataset/"
 
 ##### change data ####
@@ -13,8 +14,8 @@ series_b <- fread(paste0(data_path, "odds_series_b.csv"))
 series_b_matches <- fread(paste0(data_path, "odds_series_b_matches.csv"))
 
 ## merge data
-matches_all <- full_join(series_matches, series_b_matches)
 series_all <- full_join(series, series_b)
+matches_all <- full_join(series_matches, series_b_matches)
 matches_all <- matches_all %>% filter(match_id %in% series_all$match_id)
 rm(series, series_b, series_matches, series_b_matches)
 
@@ -94,15 +95,14 @@ bet365 <- bet365 %>%
 # reorder columns
 bet365_short <- bet365 %>% 
   select(c(1:3, "outcome", "closing_odds_outcome", (241-18):241))
-#write.csv(bet365_short, file = "bet365_outcome_features.csv")
 
 # drop NaNs
 bet365_dropped <- bet365_short %>% drop_na()
 
 # add team ids
 matches_all <- matches_all %>% select(match_id, league, home_team, away_team)
-bet365_joined <- left_join(bet365_dropped, matches_all, by = "match_id")
-bet365_joined <- bet365_joined %>% select(match_id, league, home_team, away_team, outcome,closing_odds_outcome, 
+bet365_joined <- left_join(bet365_dropped, select(matches_all, match_id, match_date), by = "match_id")
+bet365_joined <- bet365_joined %>% select(match_id, match_date, league, home_team, away_team, outcome,closing_odds_outcome, 
                                           home_opening, home_closing, home_opening_minus_closing, 
                                           home_min, home_max, home_range,
                                           draw_opening, draw_closing, draw_opening_minus_closing, 
@@ -110,4 +110,11 @@ bet365_joined <- bet365_joined %>% select(match_id, league, home_team, away_team
                                           away_opening, away_closing, away_opening_minus_closing,
                                           away_min, away_max, away_range)
 
-#write.csv(series_premier, file = "series_premier_league.csv")
+write.csv(bet365_joined, file = "bet365_outcome_features.csv")
+
+## add match date
+matches_all <- fread('/Users/nickvarberg/Desktop/School/Eulers-Men-Sports-Betting/bet365_matches.csv')
+matches_all <- matches_all %>% select(match_id, match_datetime, league, home_team, away_team)
+matches_all <- matches_all %>% mutate(match_date = str_trunc(match_datetime, 10, "right", ""))
+matches_all <- matches_all %>% select(match_id, match_date, league, home_team, away_team)
+bet365_dropped <- fread('/Users/nickvarberg/Desktop/School/Eulers-Men-Sports-Betting/bet365_outcome_features.csv')
