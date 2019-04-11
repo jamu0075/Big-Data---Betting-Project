@@ -1,26 +1,45 @@
 {% extends "layout.html" %}
 {% block content %}
   <h2>EU Football league betting data!<h2>
+    <div class="input-group mb-3">
+      <div class="input-group-prepend">
+        <select id="team-list-1" class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <option value="" selected disabled hidden>League &#9660;</option>
+          {% for league in leagues %}
+            <option>{{  league.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <input type="text" class="form-control" aria-label="Text input with dropdown button">
+    </div>
   <div class="input-group mb-3">
     <div class="input-group-prepend">
-      <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Team 1</button>
-      <div class="dropdown-menu">
+      <select id="team-list-1" class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <option value="" selected disabled hidden>Team 1 &#9660;</option>
         {% for team in teams %}
-          <a class="dropdown-item" href="#">{{ team.name }}</a>
+          <option>{{  team.name }}</option>
         {% endfor %}
-      </div>
+      </select>
     </div>
     <input type="text" class="form-control" aria-label="Text input with dropdown button">
   </div>
-  <div class="input-group">
+  <div class="input-group mb-3">
     <div class="input-group-prepend">
-      <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Team 2</button>
-      <div class="dropdown-menu">
+      <select id="ddlViewBy" class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <option value="" selected disabled hidden>Team 2 &#9660;</option>
         {% for team in teams %}
-          <a class="dropdown-item" href="#">{{ team.other }}</a>
+          <option>{{  team.other }}</option>
         {% endfor %}
-      </div>
+      </select>
     </div>
     <input type="text" class="form-control" aria-label="Text input with dropdown button">
   </div>
+  <div class="container-graph">
+    <h3>Graph Here</h3>
+  </div>
+
+  <script language="javascript" type="text/javascript">
+    var team1 = document.getElementById("team-list-1");
+    var strUser = team1.options[team1.selectedIndex].value;
+  </script>
 {% endblock content %}
