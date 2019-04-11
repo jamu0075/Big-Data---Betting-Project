@@ -9,7 +9,7 @@
 ## Project Summary
 
 ## Current Deployment Link
-[Deployment](http://btb-env.hm3cezwwmr.us-east-1.elasticbeanstalk.com/)
+
 ## Datasets We Are Using
 
 * [Kaggle European soccer data](https://www.kaggle.com/austro/beat-the-bookie-worldwide-football-dataset)
