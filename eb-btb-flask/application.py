@@ -55,7 +55,7 @@ def about():
 
 
 host = '[HOST]'
-port = '[PORT]'
+port = 3306
 user = '[USER]'
 password = '[PASSWORD]'
 dbname = '[DBNAME]'
@@ -63,9 +63,12 @@ dbname = '[DBNAME]'
 try:
     print('Attempting to connect...')
     conn = pymysql.connect(host, user=user, port=port, passwd = password, db=dbname)
-    print("Connected!")
+    print('Connected!')
+    conn.close()
+    print('Disconnected!')
 except:
     print("An error occurred...")
+
 
 # run the app.
 if __name__ == "__main__":
