@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block content %}
+  <h2>EU Football league betting data!<h2>
+  <div class="input-group mb-3">
+    <div class="input-group-prepend">
+      <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Team 1</button>
+      <div class="dropdown-menu">
+        <a class="dropdown-item" href="#">Team 1</a>
+        <a class="dropdown-item" href="#">Team 2</a>
+      </div>
+    </div>
+    <input type="text" class="form-control" aria-label="Text input with dropdown button">
+  </div>
+  <div class="input-group">
+    <div class="input-group-prepend">
+      <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Team 2</button>
+      <div class="dropdown-menu">
+        <a class="dropdown-item" href="#">Team 1</a>
+        <a class="dropdown-item" href="#">Team 2</a>
+      </div>
+    </div>
+    <input type="text" class="form-control" aria-label="Text input with dropdown button">
+  </div>
+{% endblock content %}
