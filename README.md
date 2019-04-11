@@ -7,6 +7,7 @@
 * Jacob Munoz
 
 ## Local Development
+**_Make sure you create a branch to develop and DO NOT push to master. This will allow you to freely play around with the database without breaking code permanently_**
 1. cd into **eb-btb-flask**
 2. Activate the virtual environment to prevent version conflicts
 ```
@@ -20,7 +21,7 @@ pip install -r requirements.txt
 ```
 python application.py
 ```
-> For now the database connection is hard coded and *not* included in the source. Replace the placeholder text in application.py to connect.
+> For now the database connection is hard coded and *not* included in the source. Replace the placeholder text in application.py to connect. 
 ```
 host = '[HOST]'
 port = 3306
