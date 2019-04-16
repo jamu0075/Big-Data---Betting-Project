@@ -6,68 +6,56 @@ from flaskext.mysql import MySQL
 # EB looks for an 'app' callable by default.
 app = Flask(__name__)
 
-#Temp data to emulate database response data
-teams = [
-    {
-        'name': 'Team 1',
-        'other': 'Team 1 info'
-    },
-    {
-        'name': 'Team 2',
-        'other': 'Team 2 info'
-    },
-    {
-        'name': 'Team 3',
-        'other': 'Team 3 info'
-    },
-    {
-        'name': 'Team 4',
-        'other': 'Team 4 info'
-    }
-]
+# A database class to use the DB as an object
+class Database:
+    def __init__(self):
+        host = 'btb-db-instance.cduiw3cccdch.us-east-1.rds.amazonaws.com'
+        port = 3306
+        user = ''
+        password = ''
+        db = ''
 
-leagues = [
-    {
-        'name': 'League 1'
-    },
-    {
-        'name': 'League 2'
-    },
-    {
-        'name': 'League 3'
-    },
-    {
-        'name': 'League 4'
-    },
-    {
-        'name': 'League 5'
-    }
-]
+        print('Attempting to connect...')
+        try:
+            self.conn = pymysql.connect(host, user=user, port=port, passwd=password, db=db)
+            self.curs = self.conn.cursor()
+        except:
+            print('An error occured while attempting to connect to the database.')
 
+        #print('Connected!')
+
+    # Return unique leagues from the db
+    def get_leagues(self):
+        sql = 'SELECT DISTINCT league FROM outcomeFeatures ORDER BY league'
+        self.curs.execute(sql)
+        result = self.curs.fetchall()
+
+        return result
+
+    # Return unique teams from the db
+    def get_teams(self):
+        sql = 'SELECT DISTINCT home FROM outcomeFeatures ORDER BY home'
+        self.curs.execute(sql)
+        result = self.curs.fetchall()
+
+        return result
+
+# Home page
 @app.route("/")
 @app.route("/home")
 def home():
+
+    myDB = Database()
+    leagues = myDB.get_leagues()
+    teams = myDB.get_teams()
+
     return render_template('home.html', teams=teams, leagues=leagues)
 
+
+# About page
 @app.route("/about")
 def about():
     return render_template('about.html', title="About")
-
-
-host = '[HOST]'
-port = 3306
-user = '[USER]'
-password = '[PASSWORD]'
-dbname = '[DBNAME]'
-
-try:
-    print('Attempting to connect...')
-    conn = pymysql.connect(host, user=user, port=port, passwd = password, db=dbname)
-    print('Connected!')
-    conn.close()
-    print('Disconnected!')
-except:
-    print("An error occurred...")
 
 
 # run the app.
