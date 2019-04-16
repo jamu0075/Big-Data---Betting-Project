@@ -3,21 +3,23 @@
   <h2>EU Football league betting data!<h2>
     <div class="input-group mb-3">
       <div class="input-group-prepend">
-        <select id="team-list-1" class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          <option value="" selected disabled hidden>League &#9660;</option>
-          {% for league in leagues %}
-            <option>{{  league.name }}</option>
-          {% endfor %}
-        </select>
+        <form>
+          <select id="league" class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <option value="" selected disabled hidden>League &#9660;</option>
+            {% for league in leagues %}
+              <option>{{ league[0] }}</option>
+            {% endfor %}
+          </select>
+        </form>
       </div>
       <input type="text" class="form-control" aria-label="Text input with dropdown button">
     </div>
   <div class="input-group mb-3">
     <div class="input-group-prepend">
-      <select id="team-list-1" class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <select class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         <option value="" selected disabled hidden>Team 1 &#9660;</option>
         {% for team in teams %}
-          <option>{{  team.name }}</option>
+          <option>{{ team[0] }}</option>
         {% endfor %}
       </select>
     </div>
@@ -28,7 +30,7 @@
       <select id="ddlViewBy" class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         <option value="" selected disabled hidden>Team 2 &#9660;</option>
         {% for team in teams %}
-          <option>{{  team.other }}</option>
+          <option>{{ team[0] }}</option>
         {% endfor %}
       </select>
     </div>
@@ -39,7 +41,7 @@
   </div>
 
   <script language="javascript" type="text/javascript">
-    var team1 = document.getElementById("team-list-1");
+    var league = document.getElementById("league");
     var strUser = team1.options[team1.selectedIndex].value;
   </script>
 {% endblock content %}
