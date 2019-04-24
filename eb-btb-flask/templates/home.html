@@ -1,7 +1,35 @@
 {% extends "layout.html" %}
 {% block content %}
   <h2>EU Football league betting data!<h2>
-    <div class="input-group mb-3">
+    <form class="mb-5" methods="POST">
+      {{ form.csrf_token }}
+      {{ form.league }}
+      {{ form.team1 }}
+      {{ form.team2 }}
+      <input type="submit">
+    </form>
+    <script>
+      let user_league = document.getElementById('league');
+      let user_team1 = document.getElementById('team1');
+      let user_team2 = document.getElementById('team2');
+
+      user_league.onchange = function() {
+        league = user_league.value;
+
+        fetch('/team/' + league).then(function(response) {
+          response.json().then(function(data) {
+            let optionHTML = '';
+            for (let team of data.teams) {
+              optionHTML += '<option>' + team.name + '</option>';
+            }
+
+            user_team1.innerHTML = optionHTML;
+            user_team2.innerHTML = optionHTML;
+          });
+        });
+      }
+    </script>
+    <!--div class="input-group mb-3">
       <div class="input-group-prepend">
         <form>
           <select id="league" class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -35,13 +63,8 @@
       </select>
     </div>
     <input type="text" class="form-control" aria-label="Text input with dropdown button">
-  </div>
+  </div-->
   <div class="container-graph">
     <h3>Graph Here</h3>
   </div>
-
-  <script language="javascript" type="text/javascript">
-    var league = document.getElementById("league");
-    var strUser = team1.options[team1.selectedIndex].value;
-  </script>
 {% endblock content %}

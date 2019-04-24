@@ -1,6 +1,8 @@
 Click==7.0
 Flask==1.0.2
 flask-mysql==1.4.0
+flask_wtf==0.14
+wtforms==2.2.1
 itsdangerous==1.1.0
 Jinja2==2.10
 MarkupSafe==1.1.1
