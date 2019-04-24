@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+{% block content %}
+  <h2>EU Football league betting data!<h2>
+    <div class="input-group mb-3">
+      <div class="input-group-prepend">
+        <form>
+          <select id="league" class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <option value="" selected disabled hidden>League &#9660;</option>
+            {% for league in leagues %}
+              <option>{{ league[0] }}</option>
+            {% endfor %}
+          </select>
+        </form>
+      </div>
+      <input type="text" class="form-control" aria-label="Text input with dropdown button">
+      </div>
+
+<div class="input-group mb-3">
+  <div class="input-group-prepend">
+    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</button>
+  <div class="dropdown-menu">
+    {% for league in leagues %}
+    <a class="dropdown-item" href="#">league</a>
+    {% endfor %}
+    </div>
+  </div>
+  <input type="text" class="form-control" aria-label="Text input with dropdown button">
+</div>
+ 
+  <div class="input-group mb-3">
+    <div class="input-group-prepend">
+      <select class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <option value="" selected disabled hidden>Team 1 &#9660;</option>
+        {% for team in teams %}
+          <option>{{ team[0] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <input type="text" class="form-control" aria-label="Text input with dropdown button">
+  </div>
+  <div class="container-graph">
+    <h3>Graph Here</h3>
+  </div>
+
+  <script language="javascript" type="text/javascript">
+    var league = document.getElementById("league");
+    var strUser = team1.options[team1.selectedIndex].value;
+  </script>
+{% endblock content %}
