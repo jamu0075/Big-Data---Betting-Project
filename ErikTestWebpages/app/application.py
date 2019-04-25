@@ -25,7 +25,8 @@ def plot():
 # 	plt.plot(lnprice)
 
 # 	plt.savefig('/static/images/new_plot.png')
-	return render_template('plot.html', name = 'new_plot', url ='/static/images/new_plot.png')
+	# return render_template('plot.html', name = 'new_plot', url ='/static/images/new_plot.png')
+	return render_template('plot.html', name = 'new_plot')
 
 @app.route('/plot.png')
 def generate_plot():
