@@ -1,58 +1,40 @@
 {% extends "layout.html" %}
 {% block content %}
   <h2>EU Football league betting data!<h2>
-    <div class="input-group mb-3">
-      <div class="input-group-prepend">
-        <form>
-          <select id="league" class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <option value="" selected disabled hidden>League &#9660;</option>
-            {% for league in leagues %}
-              <option>{{ league[0] }}</option>
-            {% endfor %}
-          </select>
-        </form>
-      </div>
-      <input type="text" class="form-control" aria-label="Text input with dropdown button">
-      </div>
+    <form class="mb-5" methods="POST">
+      {{ form.csrf_token }}
+      {{ form.league }}
+      {{ form.team1 }}
+      {{ form.team2 }}
+      <input type="submit">
+    </form>
+    <script>
+      let user_league = document.getElementById('league');
+      let user_team1 = document.getElementById('team1');
+      let user_team2 = document.getElementById('team2');
 
-<div class="input-group mb-3">
-  <div class="input-group-prepend">
-    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</button>
-  <div class="dropdown-menu">
-    {% for league in leagues %}
-    <a class="dropdown-item" href="#">league</a>
-    {% endfor %}
-    </div>
-  </div>
-  <input type="text" class="form-control" aria-label="Text input with dropdown button">
-</div>
- 
-  <div class="input-group mb-3">
-    <div class="input-group-prepend">
-      <select class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        <option value="" selected disabled hidden>Team 1 &#9660;</option>
-        {% for team in teams %}
-          <option>{{ team[0] }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <input type="text" class="form-control" aria-label="Text input with dropdown button">
-  </div>
-  <div class="container-graph">
-    <h3>Graph Here</h3>
-  </div>
-  
-  	<div class="plot">
+      user_league.onchange = function() {
+        league = user_league.value;
+
+        fetch('/team/' + league).then(function(response) {
+          response.json().then(function(data) {
+            let optionHTML = '';
+            for (let team of data.teams) {
+              optionHTML += '<option>' + team.name + '</option>';
+            }
+
+            user_team1.innerHTML = optionHTML;
+            user_team2.innerHTML = optionHTML;
+          });
+        });
+      }
+    </script>
+	<div class="plot">
 		<h1>Plot</h1>
 		<p>{{ name }}</p>
 		<!-- <img src="/plot.png" alt="Chart" height="42" width="42"> -->
-		<img src="/plot.png" alt="Chart">
+		<img src="/plot.png" alt="my plot">
 		<!-- <img src="/plot.png" alt="Chart" height="42" width="42"> -->
 		<!-- <img src={{ url }} alt="Chart" height="42" width="42"> -->
 	</div>
-
-  <script language="javascript" type="text/javascript">
-    var league = document.getElementById("league");
-    var strUser = team1.options[team1.selectedIndex].value;
-  </script>
 {% endblock content %}

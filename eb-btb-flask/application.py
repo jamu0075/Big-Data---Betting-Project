@@ -4,6 +4,12 @@ from wtforms import SelectField
 import os
 import pymysql
 from flaskext.mysql import MySQL
+import numpy as np
+import io
+import random
+from flask import Response
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
 
 # EB looks for an 'app' callable by default.
 app = Flask(__name__)
@@ -46,19 +52,25 @@ class Database:
 
         return result
 
-<<<<<<< HEAD
-    # Nick create this
-    def display_plot(self):
-        return
-        
-=======
-    # Return unique teams in a given league from the db
+      # Return unique teams in a given league from the db
     def get_teams_in_league(self, league):
-        sql = "SELECT DISTINCT home FROM outcomeFeatures WHERE league = '{}' ORDER BY home".format(league)
+        sql = "SELECT DISTINCT home FROM outcomeFeatures WHERE league = '{}' ORDER BY home".format(league) # .format puts league into {}
         self.curs.execute(sql)
         result = self.curs.fetchall()
 
         return result
+
+    # get whole record of team1 vs team2
+    def get_teams_records(self):
+    	sql = 'SELECT home, away, winner FROM outcomeFeatures WHERE home = Everton AND away = Liverpool'
+    	self.curs.execute(sql)
+    	result = self.curs.fetchall()
+    	print(result)
+
+    # Nick create this
+    #def display_plot(self):
+    #    return
+        
 
 # A dynamic Form object for UI
 class Form(FlaskForm):
@@ -69,7 +81,6 @@ class Form(FlaskForm):
 
 # A database connection instance for global use
 myDB = Database()
->>>>>>> master
 
 # Home page
 @app.route("/", methods=['GET', 'POST'])
@@ -98,14 +109,11 @@ def team(league):
     # Create a list of dictionary objects for dropdown
     teamList = []
 
-<<<<<<< HEAD
-    return render_template('home.html', teams=teams, leagues=leagues) # pass in arguments teams and leagues
-=======
+    
     for team in teams:
         teamObj = {}
         teamObj['name'] = team[0]
         teamList.append(teamObj)
->>>>>>> master
 
     return jsonify({'teams' : teamList})
 
@@ -118,13 +126,36 @@ def about():
 @app.route("/nickdev")
 def nickdev():
 
-    myDB = Database()
-    leagues = myDB.get_leagues()
-    teams = myDB.get_teams()
-    
-    # this is the last thing to do
-    return render_template('nickdev.html', teams=teams, leagues=leagues)
+    myForm = Form()
+    #Fetch form values from the database
+    myForm.league.choices = [(league[0], league[0]) for league in myDB.get_leagues()]
+    myForm.team1.choices = [(team[0], team[0]) for team in myDB.get_teams()]
+    myForm.team2.choices = [(team[0], team[0]) for team in myDB.get_teams()]
 
+    if request.method == 'POST':
+        print('FORM RECIEVED')
+        return '<h1>League: {}, Team1: {}, Team2: {}</h1>'.format(form.league.data, form.team1.data, form.team2.data)
+
+    return render_template('nickdev.html', form=myForm)
+
+
+@app.route('/plot.png')
+def plot_png():
+    fig = create_figure()
+    output = io.BytesIO()
+    FigureCanvas(fig).print_png(output)
+    return Response(output.getvalue(), mimetype='image/png')
+
+def create_figure():
+
+
+
+   fig = Figure()
+    axis = fig.add_subplot(1, 1, 1)
+    xs = range(100)
+    ys = [random.randint(1, 50) for x in xs]
+    axis.plot(xs, ys)
+    return fig
 
 # run the app.
 if __name__ == "__main__":
