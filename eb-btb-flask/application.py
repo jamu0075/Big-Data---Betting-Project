@@ -10,6 +10,7 @@ import random
 from flask import Response
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
 
 # EB looks for an 'app' callable by default.
 app = Flask(__name__)
@@ -62,10 +63,11 @@ class Database:
 
     # get whole record of team1 vs team2
     def get_teams_records(self):
-    	sql = 'SELECT home, away, winner FROM outcomeFeatures WHERE home = Everton AND away = Liverpool'
-    	self.curs.execute(sql)
-    	result = self.curs.fetchall()
-    	print(result)
+        tms = ('Everton', 'Liverpool')
+        sql = "SELECT home, away, winner FROM outcomeFeatures WHERE home IN {} AND away IN {}".format(tms, tms)
+        self.curs.execute(sql)
+        result = self.curs.fetchall()
+        print(result)
 
     # Nick create this
     #def display_plot(self):
@@ -88,7 +90,7 @@ myDB = Database()
 def home():
 
     myForm = Form()
-    #Fetch form values from the database
+    # Fetch form values from the database
     myForm.league.choices = [(league[0], league[0]) for league in myDB.get_leagues()]
     myForm.team1.choices = [(team[0], team[0]) for team in myDB.get_teams()]
     myForm.team2.choices = [(team[0], team[0]) for team in myDB.get_teams()]
@@ -98,6 +100,7 @@ def home():
         return '<h1>League: {}, Team1: {}, Team2: {}</h1>'.format(form.league.data, form.team1.data, form.team2.data)
 
     return render_template('home.html', form=myForm)
+
 
 #Route to handle dynamic dropdown
 @app.route('/team/<league>')
@@ -122,12 +125,14 @@ def team(league):
 def about():
     return render_template('about.html', title="About")
 
+
 # Nick create this
 @app.route("/nickdev")
 def nickdev():
+    myDB.get_teams_records()
 
     myForm = Form()
-    #Fetch form values from the database
+    # Fetch form values from the database
     myForm.league.choices = [(league[0], league[0]) for league in myDB.get_leagues()]
     myForm.team1.choices = [(team[0], team[0]) for team in myDB.get_teams()]
     myForm.team2.choices = [(team[0], team[0]) for team in myDB.get_teams()]
@@ -147,18 +152,20 @@ def plot_png():
     return Response(output.getvalue(), mimetype='image/png')
 
 def create_figure():
-
-
-
-   fig = Figure()
+    fig = plt.figure()
+    #fig = Figure()
+    n_games = 100
     axis = fig.add_subplot(1, 1, 1)
     xs = range(100)
     ys = [random.randint(1, 50) for x in xs]
-    axis.plot(xs, ys)
+    axis.plot(xs, ys, 'r')
+    axis.set_xlim([0, n_games+1])
     return fig
+
 
 # run the app.
 if __name__ == "__main__":
+
     # Setting debug to True enables debug output. This line should be
     # removed before deploying a production app.
     app.debug = True
