@@ -102,7 +102,7 @@ bet365_dropped <- bet365_short %>% drop_na()
 # add team ids
 matches_all <- matches_all %>% select(match_id, league, home_team, away_team)
 bet365_joined <- left_join(bet365_dropped, select(matches_all, match_id, match_date), by = "match_id")
-bet365_joined <- bet365_joined %>% select(match_id, match_date, league, home_team, away_team, outcome,closing_odds_outcome, 
+bet365_joined <- bet365_joined %>% select(match_id, match_date, league, home_team, away_team, outcome, winning_team, closing_odds_outcome, 
                                           home_opening, home_closing, home_opening_minus_closing, 
                                           home_min, home_max, home_range,
                                           draw_opening, draw_closing, draw_opening_minus_closing, 

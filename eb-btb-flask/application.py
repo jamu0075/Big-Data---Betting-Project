@@ -64,6 +64,7 @@ class Database:
 
     # get whole record of team1 vs team2
     def get_teams_records(self):
+        # update this to be user inputted teams from drop downs
         tms = ('Everton', 'Liverpool')
         sql = "SELECT home, away, winner, home_closing, away_closing FROM outcomeFeatures WHERE home IN {} AND away IN {}".format(tms, tms)
         self.curs.execute(sql)
@@ -192,19 +193,16 @@ def create_team_records_fig():
     axis.set_xlim([0, n_games + 1])
     axis.set_ylim([0, y_height + 1])
     axis.set_xticks(x[0:n_games])
+    # update this to be dates
     axis.set_xticklabels(['99-99-99', '99-99-99'])
     axis.set_yticks([1, y_height])
     axis.set_yticklabels(['home', 'away'])
-    print(x)
-    print(y)
-    print(team_names)
     i = 0
     while i < n_games * 2:
         axis.text(x[i], y[i], team_names[i],
                      horizontalalignment='center',
                      verticalalignment='center')
         i = i + 1
-    print('got thru loop')
     return fig
 
 
