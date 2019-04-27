@@ -5,6 +5,7 @@ import os
 import pymysql
 from flaskext.mysql import MySQL
 import numpy as np
+import pandas as pd
 import io
 import random
 from flask import Response
@@ -64,10 +65,11 @@ class Database:
     # get whole record of team1 vs team2
     def get_teams_records(self):
         tms = ('Everton', 'Liverpool')
-        sql = "SELECT home, away, winner FROM outcomeFeatures WHERE home IN {} AND away IN {}".format(tms, tms)
+        sql = "SELECT home, away, winner, home_closing, away_closing FROM outcomeFeatures WHERE home IN {} AND away IN {}".format(tms, tms)
         self.curs.execute(sql)
         result = self.curs.fetchall()
-        print(result)
+        df = pd.DataFrame(data=list(result), columns=['home', 'away', 'winner', 'home_closing', 'away_closing']) # need list of tuples instead of tuple of tuples
+        return df
 
     # Nick create this
     #def display_plot(self):
@@ -129,7 +131,6 @@ def about():
 # Nick create this
 @app.route("/nickdev")
 def nickdev():
-    myDB.get_teams_records()
 
     myForm = Form()
     # Fetch form values from the database
@@ -146,21 +147,66 @@ def nickdev():
 
 @app.route('/plot.png')
 def plot_png():
-    fig = create_figure()
+    fig = create_team_records_fig()
     output = io.BytesIO()
     FigureCanvas(fig).print_png(output)
     return Response(output.getvalue(), mimetype='image/png')
 
-def create_figure():
-    fig = plt.figure()
-    #fig = Figure()
-    n_games = 100
+def create_team_records_fig():
+    df = myDB.get_teams_records()
+    # update these:
+    team1 = 'Everton'
+    n_games = df['home'].size
+    # x is integers from 1 to n_games for home teams then 1 to n_games for away
+    x = np.concatenate([np.linspace(1, n_games, n_games)] * 2)
+    # y is home_teams first at y=1 then away teams at y=y_height
+    y_height = 3
+    y = np.concatenate([np.ones(n_games), y_height * np.ones(n_games)])
+    # sizes of bubbles are odds of each team
+    sizes = np.concatenate([df['home_closing'], df['away_closing']])
+    # names of teams
+    team_names = np.concatenate([df['home'], df['away']])
+    # colors is the color of each bubble where team1 = blue and team2  = red
+    colors = ['grey'] * n_games * 2
+    i = 0  # i is the row of df
+    while i < n_games:
+        outcome = df['winner'].values[i]
+        if outcome == 'home':
+            team = df['home'].values[i]
+            if team == team1:
+                colors[i] = 'blue'
+            else:
+                colors[i] = 'red'
+        elif outcome == 'away':
+            team = df['away'].values[i]
+            if team == team1:
+                colors[n_games + i] = 'blue'
+            else:
+                colors[n_games + i] = 'red'
+        i = i + 1
+
+
+    fig = Figure()
     axis = fig.add_subplot(1, 1, 1)
-    xs = range(100)
-    ys = [random.randint(1, 50) for x in xs]
-    axis.plot(xs, ys, 'r')
-    axis.set_xlim([0, n_games+1])
+    axis.scatter(x, y, s=sizes * 1000 * (6 - n_games), c=colors, alpha=0.4)
+    axis.set_xlim([0, n_games + 1])
+    axis.set_ylim([0, y_height + 1])
+    axis.set_xticks(x[0:n_games])
+    axis.set_xticklabels(['99-99-99', '99-99-99'])
+    axis.set_yticks([1, y_height])
+    axis.set_yticklabels(['home', 'away'])
+    print(x)
+    print(y)
+    print(team_names)
+    i = 0
+    while i < n_games * 2:
+        axis.text(x[i], y[i], team_names[i],
+                     horizontalalignment='center',
+                     verticalalignment='center')
+        i = i + 1
+    print('got thru loop')
     return fig
+
 
 
 # run the app.
