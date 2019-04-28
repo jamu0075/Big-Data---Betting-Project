@@ -1,6 +1,8 @@
+#!/usr/bin/env python3
+
 from flask import Flask, render_template, request, jsonify
 from flask_wtf import FlaskForm
-from wtforms import SelectField
+from wtforms import SelectField, SubmitField
 import os
 import pymysql
 from flaskext.mysql import MySQL
@@ -62,51 +64,50 @@ class Database:
 
         return result
 
-    # get whole record of team1 vs team2
-    def get_teams_records(self):
-        # update this to be user inputted teams from drop downs
-        tms = ('Everton', 'Liverpool')
-        sql = "SELECT home, away, winner, home_closing, away_closing FROM outcomeFeatures WHERE home IN {} AND away IN {}".format(tms, tms)
+    def get_teams_record(self, team1, team2):
+        teams = (team1, team2)
+        sql = "SELECT home, away, winner, home_closing, away_closing FROM outcomeFeatures WHERE home IN {} AND away IN {}".format(teams, teams)
+
         self.curs.execute(sql)
         result = self.curs.fetchall()
-        df = pd.DataFrame(data=list(result), columns=['home', 'away', 'winner', 'home_closing', 'away_closing']) # need list of tuples instead of tuple of tuples
-        return df
 
-    # Nick create this
-    #def display_plot(self):
-    #    return
-        
+        return result
 
 # A dynamic Form object for UI
 class Form(FlaskForm):
-    league = SelectField('league', choices=[])
-    team1 = SelectField('team1', choices=[])
-    team2 = SelectField('team2', choices=[])
+    league = SelectField('League', choices=[])
+    team1 = SelectField('Team 1', choices=[])
+    team2 = SelectField('Team 2', choices=[])
 
+    submit = SubmitField('Submit')
 
+#=========================================================
 # A database connection instance for global use
 myDB = Database()
+#=========================================================
 
 # Home page
 @app.route("/", methods=['GET', 'POST'])
-@app.route("/home")
 def home():
 
-    myForm = Form()
-    # Fetch form values from the database
+
+    myForm = Form(request.form)
+    #Fetch form values from the database
     myForm.league.choices = [(league[0], league[0]) for league in myDB.get_leagues()]
     myForm.team1.choices = [(team[0], team[0]) for team in myDB.get_teams()]
     myForm.team2.choices = [(team[0], team[0]) for team in myDB.get_teams()]
 
+    # Handle form POST, update page
     if request.method == 'POST':
-        print('FORM RECIEVED')
-        return '<h1>League: {}, Team1: {}, Team2: {}</h1>'.format(form.league.data, form.team1.data, form.team2.data)
+        teams_record = myDB.get_teams_record(myForm.team1.data, myForm.team2.data)
+
+        return render_template('home.html', form=myForm, league=myForm.league.data, team1=myForm.team1.data, team2=myForm.team2.data, teams_record=teams_record)
 
     return render_template('home.html', form=myForm)
 
 
 #Route to handle dynamic dropdown
-@app.route('/team/<league>')
+@app.route('/<league>')
 def team(league):
 
     # Get teams from user inputed league
