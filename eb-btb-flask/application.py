@@ -42,7 +42,7 @@ class Database:
 
     # Return unique leagues from the db
     def get_leagues(self):
-        sql = 'SELECT DISTINCT league FROM outcomeFeatures ORDER BY league'
+        sql = 'SELECT DISTINCT league FROM outcomeFeatures2 ORDER BY league'
         self.curs.execute(sql)
         result = self.curs.fetchall()
 
@@ -50,7 +50,7 @@ class Database:
 
     # Return unique teams from the db
     def get_teams(self):
-        sql = 'SELECT DISTINCT home FROM outcomeFeatures ORDER BY home'
+        sql = 'SELECT DISTINCT home_team FROM outcomeFeatures2 ORDER BY home_team'
         self.curs.execute(sql)
         result = self.curs.fetchall()
 
@@ -58,7 +58,7 @@ class Database:
 
       # Return unique teams in a given league from the db
     def get_teams_in_league(self, league):
-        sql = "SELECT DISTINCT home FROM outcomeFeatures WHERE league = '{}' ORDER BY home".format(league) # .format puts league into {}
+        sql = "SELECT DISTINCT home_team FROM outcomeFeatures2 WHERE league = '{}' ORDER BY home_team".format(league)
         self.curs.execute(sql)
         result = self.curs.fetchall()
 
@@ -66,7 +66,7 @@ class Database:
 
     def get_teams_record(self, team1, team2):
         teams = (team1, team2)
-        sql = "SELECT match_date, home, away, winner, home_closing, away_closing FROM outcomeFeatures WHERE home IN {} AND away IN {}".format(teams, teams)
+        sql = "SELECT match_date, home_team, away_team, winning_team, home_closing, away_closing FROM outcomeFeatures2 WHERE home_team IN {} AND away_team IN {}".format(teams, teams)
 
         self.curs.execute(sql)
         result = self.curs.fetchall()
