@@ -66,7 +66,7 @@ class Database:
 
     def get_teams_record(self, team1, team2):
         teams = (team1, team2)
-        sql = "SELECT home, away, winner, home_closing, away_closing FROM outcomeFeatures WHERE home IN {} AND away IN {}".format(teams, teams)
+        sql = "SELECT match_date, home, away, winner, home_closing, away_closing FROM outcomeFeatures WHERE home IN {} AND away IN {}".format(teams, teams)
 
         self.curs.execute(sql)
         result = self.curs.fetchall()
