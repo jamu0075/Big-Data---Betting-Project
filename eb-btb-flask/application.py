@@ -19,8 +19,8 @@ class Database:
     def __init__(self):
         host = 'btb-db-instance.cduiw3cccdch.us-east-1.rds.amazonaws.com'
         port = 3306
-        user = ''
-        password = ''
+        user = 'masterUser'
+        password = 'supremedbpass2002'
         db = 'btb-db'
 
         print('Attempting to connect...')
@@ -56,6 +56,15 @@ class Database:
 
         return result
 
+    def get_teams_record(self, team1, team2):
+        teams = (team1, team2)
+        sql = "SELECT home, away, winner FROM outcomeFeatures WHERE home IN {} AND away IN {}".format(teams, teams)
+
+        self.curs.execute(sql)
+        result = self.curs.fetchall()
+
+        return result
+
 # A dynamic Form object for UI
 class Form(FlaskForm):
     league = SelectField('League', choices=[])
@@ -64,12 +73,13 @@ class Form(FlaskForm):
 
     submit = SubmitField('Submit')
 
+#=========================================================
 # A database connection instance for global use
 myDB = Database()
+#=========================================================
 
 # Home page
 @app.route("/", methods=['GET', 'POST'])
-#@app.route("/home", methods=['GET', 'POST'])
 def home():
 
     myForm = Form(request.form)
@@ -80,8 +90,9 @@ def home():
 
     # Handle form POST, update page
     if request.method == 'POST':
-        print('FORM RECIEVED')
-        return render_template('home.html', form=myForm, league=myForm.league.data, team1=myForm.team1.data, team2=myForm.team2.data)
+        teams_record = myDB.get_teams_record(myForm.team1.data, myForm.team2.data)
+
+        return render_template('home.html', form=myForm, league=myForm.league.data, team1=myForm.team1.data, team2=myForm.team2.data, teams_record=teams_record)
 
     return render_template('home.html', form=myForm)
 

@@ -25,6 +25,9 @@
         <h2>League: {{ league }}</h2>
         <h3>Team 1: {{ team1 }}</h3>
         <h3>Team 2: {{ team2 }}</h3>
+        {% for row in teams_record %}
+          <h4><b>Home:</b> {{ row[0] }} <b>Away:</b> {{ row[1] }} <b>Winner:</b> {{ row[2] }}</h4>
+        {% endfor %}
       {% endif %}
     </div>
 
