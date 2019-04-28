@@ -19,8 +19,8 @@ class Database:
     def __init__(self):
         host = 'btb-db-instance.cduiw3cccdch.us-east-1.rds.amazonaws.com'
         port = 3306
-        user = 'masterUser'
-        password = 'supremedbpass2002'
+        user = 
+        password =
         db = 'btb-db'
 
         print('Attempting to connect...')
