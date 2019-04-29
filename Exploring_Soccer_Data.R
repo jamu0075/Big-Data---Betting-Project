@@ -37,7 +37,7 @@ print(min/(216*31074))
 # Results: min bookkeeper is 7 and has 41% NaN
 #          bookkeeper 9, bet365, has 46% NaN
 
-##### bet365 table ####
+##### Filter to bet365 table ####
 bookkeeper <- 9
 bet365cols <- c(1:5,(6+(bookkeeper-1)*num):(6+bookkeeper*num - 1))
 bet3651 <- series %>% select(., get("bet365cols"))
@@ -109,7 +109,6 @@ bet365_joined <- bet365_joined %>% select(match_id, match_date, league, home_tea
                                           draw_min, draw_max, draw_range,
                                           away_opening, away_closing, away_opening_minus_closing,
                                           away_min, away_max, away_range)
-
 write.csv(bet365_joined, file = "bet365_outcome_features.csv")
 
 ## add match date

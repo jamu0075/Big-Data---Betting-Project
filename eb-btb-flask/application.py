@@ -74,6 +74,7 @@ class Database:
         return result
 
 # A dynamic Form object for UI
+# This is where Jacob gets the stuff:
 class Form(FlaskForm):
     league = SelectField('League', choices=[])
     team1 = SelectField('Team 1', choices=[])
@@ -97,10 +98,11 @@ def home():
     myForm.team1.choices = [(team[0], team[0]) for team in myDB.get_teams()]
     myForm.team2.choices = [(team[0], team[0]) for team in myDB.get_teams()]
 
-    # Handle form POST, update page
+    # After you presss submit,  Handle form POST, update page
     if request.method == 'POST':
         teams_record = myDB.get_teams_record(myForm.team1.data, myForm.team2.data)
-
+        # league team1 and team 2 coming from the form POST
+        # then passes to class='container graph" section in home html
         return render_template('home.html', form=myForm, league=myForm.league.data, team1=myForm.team1.data, team2=myForm.team2.data, teams_record=teams_record)
 
     return render_template('home.html', form=myForm)
@@ -149,6 +151,7 @@ def nickdev():
 
 @app.route('/plot.png')
 def plot_png():
+    # POST to here. get league, team1, team2. send to create_team_record_fig(in here)
     fig = create_team_records_fig()
     output = io.BytesIO()
     FigureCanvas(fig).print_png(output)
