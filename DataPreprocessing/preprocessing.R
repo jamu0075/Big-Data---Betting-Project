@@ -46,8 +46,7 @@ df <- fread(paste0(data_path, "games_full_odds.csv")) %>% as_tibble()
 num_time_pts <- 8
 time_pts <- seq(1,as.integer(72/num_time_pts))
 
-final_df <- final_df %>% 
-  mutate()
+
 bet365 <- fread("series_premier_league_bet365.csv")
 bet365 <- bet365 %>%
   mutate(outcome = if_else(score_home >= score_away, if_else(score_home == score_away, "draw", "home"), "away")) %>%
@@ -61,29 +60,6 @@ bet365 <- bet365 %>%
   mutate(draw_opening_minus_closing = draw_opening - draw_closing) %>%
   mutate(away_opening_minus_closing = away_opening - away_closing) %>%
   mutate(closing_odds_outcome = if_else(outcome %in% c("home", "draw"), (if_else(outcome == "home", home_closing, draw_closing)), away_closing))
-
-for (time in seq(0,71)) {
-  t_home <- paste("home", as.character(time), sep="_")
-  t_away <- paste("away", as.character(time), sep="_")
-  col_home <- grep(t_home, colnames(final_df))
-  final_df$<- final_df %>%
-    mutate(paste("home_minus_away_", t, sep="") = 
-}
-
-
-time <- 1
-t_home <- paste("home_b9", as.character(time), sep="_")
-t_away <- paste("away_b9", as.character(time), sep="_")
-col_home <- grep(t_home, colnames(series_all))
-col_away <- grep(t_away, colnames(series_all))
-seq(0,71)
-for (time in time_pts) {
-  final_df <- final_df %>%
-    time
-    mutate(home_minus_away)
-}
-  print(t)
-  
 
 select(tmp, score_home, score_away, outcome)
 head(freq_by_league, 20)
