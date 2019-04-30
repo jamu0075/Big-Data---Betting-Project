@@ -1,40 +1,10 @@
 {% extends "layout.html" %}
 {% block content %}
-  <!--<h2>EU Football league betting data!<h2>
-    <form class="mb-5" methods="POST">
-      {{ form.csrf_token }}
-      {{ form.league }}
-      {{ form.team1 }}
-      {{ form.team2 }}
-      <input type="submit">
-    </form>
-    <script>
-      let user_league = document.getElementById('league');
-      let user_team1 = document.getElementById('team1');
-      let user_team2 = document.getElementById('team2');
-
-      user_league.onchange = function() {
-        league = user_league.value;
-
-        fetch('/team/' + league).then(function(response) {
-          response.json().then(function(data) {
-            let optionHTML = '';
-            for (let team of data.teams) {
-              optionHTML += '<option>' + team.name + '</option>';
-            }
-
-            user_team1.innerHTML = optionHTML;
-            user_team2.innerHTML = optionHTML;
-          });
-        });
-      }
-    </script> -->
-	<div class="plot">
-		<h1>Teams vs. Each Other</h1>
-		<p>{{ name }}</p>
-		<!-- <img src="/plot.png" alt="Chart" height="42" width="42"> -->
-		<img src="/plot.png" alt="my plot">
-		<!-- <img src="/plot.png" alt="Chart" height="42" width="42"> -->
-		<!-- <img src={{ url }} alt="Chart" height="42" width="42"> -->
-	</div>
+  <!-- <h2>EU Football league betting data!<h2>
+    <div class="plot">
+      <h1>Teams vs. Each Other</h1>
+	<p>{{ "new_plot" }}</p>
+	<img src= "/Users/nickvarberg/Desktop/School/Eulers-Men-Sports-Betting/eb-btb-flask/static/new_plot.png", alt="my plot", height
+	  = "42", width = "42">
+    </div> -->
 {% endblock content %}

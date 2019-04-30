@@ -103,6 +103,8 @@ def home():
         teams_record = myDB.get_teams_record(myForm.team1.data, myForm.team2.data)
         # league team1 and team 2 coming from the form POST
         # then passes to class='container graph" section in home html
+        create_team_records_fig(team_records = teams_record, team1=myForm.team1.data, team2=myForm.team2.data)
+        print('3 got past call of create_team_records_fig')
         return render_template('home.html', form=myForm, league=myForm.league.data, team1=myForm.team1.data, team2=myForm.team2.data, teams_record=teams_record)
 
     return render_template('home.html', form=myForm)
@@ -135,79 +137,66 @@ def about():
 # Nick create this
 @app.route("/nickdev")
 def nickdev():
-
-    myForm = Form()
-    # Fetch form values from the database
-    myForm.league.choices = [(league[0], league[0]) for league in myDB.get_leagues()]
-    myForm.team1.choices = [(team[0], team[0]) for team in myDB.get_teams()]
-    myForm.team2.choices = [(team[0], team[0]) for team in myDB.get_teams()]
-
-    if request.method == 'POST':
-        print('FORM RECIEVED')
-        return '<h1>League: {}, Team1: {}, Team2: {}</h1>'.format(form.league.data, form.team1.data, form.team2.data)
-
-    return render_template('nickdev.html', form=myForm)
+    print('4 got to nick dev')
+    return render_template('nickdev.html')
 
 
-@app.route('/plot.png')
-def plot_png():
-    # POST to here. get league, team1, team2. send to create_team_record_fig(in here)
-    fig = create_team_records_fig()
-    output = io.BytesIO()
-    FigureCanvas(fig).print_png(output)
-    return Response(output.getvalue(), mimetype='image/png')
+## @app.route('/plot.png')
+## def plot_png():
+##     # POST to here. get league, team1, team2. send to create_team_record_fig(in here)
+##     fig = create_team_records_fig()
+##     output = io.BytesIO()
+##     FigureCanvas(fig).print_png(output)
+##     return Response(output.getvalue(), mimetype='image/png')
 
-def create_team_records_fig():
-    df = myDB.get_teams_records()
-    # update these:
-    team1 = 'Everton'
-    n_games = df['home'].size
-    # x is integers from 1 to n_games for home teams then 1 to n_games for away
+def create_team_records_fig(team_records, team1, team2):
+    df = pd.DataFrame(data=list(team_records), columns=['match_date', 'home_team', 'away_team', 'winning_team', 'home_closing', 'away_closing']) # need list of tuples instead of tuple of tuples
+    print(df)
+    print('1 got past')
+    n_games = df['home_team'].size
+    # x is integers from 1 to n_games for team1 then 1 to n_games for team2
     x = np.concatenate([np.linspace(1, n_games, n_games)] * 2)
     # y is home_teams first at y=1 then away teams at y=y_height
     y_height = 3
     y = np.concatenate([np.ones(n_games), y_height * np.ones(n_games)])
     # sizes of bubbles are odds of each team
     sizes = np.concatenate([df['home_closing'], df['away_closing']])
-    # names of teams
-    team_names = np.concatenate([df['home'], df['away']])
-    # colors is the color of each bubble where team1 = blue and team2  = red
-    colors = ['grey'] * n_games * 2
-    i = 0  # i is the row of df
-    while i < n_games:
-        outcome = df['winner'].values[i]
-        if outcome == 'home':
-            team = df['home'].values[i]
-            if team == team1:
-                colors[i] = 'blue'
-            else:
-                colors[i] = 'red'
-        elif outcome == 'away':
-            team = df['away'].values[i]
-            if team == team1:
-                colors[n_games + i] = 'blue'
-            else:
-                colors[n_games + i] = 'red'
-        i = i + 1
+    # colors is the color of each bubble where team1 = blue and team2  = red if they win
+    colors = ['grey']*n_games*2
+    bubble_text = [''] * n_games * 2
+    i = 0
+    while i < n_games: # i is the row of df
+        if df['home_team'].values[i] == team1:
+            bubble_text[i] = 'home'
+            sizes[i] = df['home_closing'].values[i]
+            bubble_text[i+n_games] = 'away'
+            sizes[i+n_games] = df['away_closing'].values[i]
+        else:
+            bubble_text[i] = 'away'
+            sizes[i] = df['away_closing'].values[i]
+            bubble_text[i+n_games] = 'home'
+            sizes[i+n_games] = df['home_closing'].values[i]
+        winner = df['winning_team'].values[i]
+        if winner == team1:
+            colors[i] = 'blue'
+        elif winner == team2:
+            colors[i+n_games] = 'red'
+        i = i+1
 
-
-    fig = Figure()
-    axis = fig.add_subplot(1, 1, 1)
-    axis.scatter(x, y, s=sizes * 1000 * (6 - n_games), c=colors, alpha=0.4)
-    axis.set_xlim([0, n_games + 1])
-    axis.set_ylim([0, y_height + 1])
-    axis.set_xticks(x[0:n_games])
-    # update this to be dates
-    axis.set_xticklabels(['99-99-99', '99-99-99'])
-    axis.set_yticks([1, y_height])
-    axis.set_yticklabels(['home', 'away'])
+    #fig = plt.figure()
+    plt.scatter(x, y, s=sizes * 1000 * (6 - n_games), c=colors, alpha=0.4)
+    plt.xlim([0, n_games + 1])
+    plt.ylim([0, y_height + 1])
+    plt.xticks(x[0:n_games],df['match_date'])
+    plt.yticks([1, y_height],[team1, team2])
     i = 0
     while i < n_games * 2:
-        axis.text(x[i], y[i], team_names[i],
+        plt.text(x[i], y[i], bubble_text[i],
                      horizontalalignment='center',
                      verticalalignment='center')
         i = i + 1
-    return fig
+    print('2 got to end of create_team_records_fig')
+    #plt.savefig('/Users/nickvarberg/Desktop/School/Eulers-Men-Sports-Betting/eb-btb-flask/static/new_plot.png', bbox_inches='tight')
 
 
 
@@ -218,3 +207,4 @@ if __name__ == "__main__":
     # removed before deploying a production app.
     app.debug = True
     app.run()
+    print('got to running the app')
