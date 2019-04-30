@@ -196,7 +196,10 @@ def create_team_records_fig(team_records, team1, team2):
                      verticalalignment='center')
         i = i + 1
     print('2 got to end of create_team_records_fig')
-    #plt.savefig('/Users/nickvarberg/Desktop/School/Eulers-Men-Sports-Betting/eb-btb-flask/static/new_plot.png', bbox_inches='tight')
+    import os
+    my_path = os.path.abspath(__file__)
+    plt.savefig(my_path + '/static/new_plot.png', bbox_inches='tight')
+    return 
 
 
 
