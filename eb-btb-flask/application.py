@@ -99,13 +99,13 @@ def home():
     myForm.team2.choices = [(team[0], team[0]) for team in myDB.get_teams()]
 
     # After you presss submit,  Handle form POST, update page
+    # league team1 and team 2 coming from the form POST
+    # then passes to class='container graph" section in home html
     if request.method == 'POST':
         teams_record = myDB.get_teams_record(myForm.team1.data, myForm.team2.data)
-        # league team1 and team 2 coming from the form POST
-        # then passes to class='container graph" section in home html
-        create_team_records_fig(team_records = teams_record, team1=myForm.team1.data, team2=myForm.team2.data)
-        print('3 got past call of create_team_records_fig')
-        return render_template('home.html', form=myForm, league=myForm.league.data, team1=myForm.team1.data, team2=myForm.team2.data, teams_record=teams_record)
+        create_team_records_fig(team_records = teams_record, team1 = myForm.team1.data, team2 = myForm.team2.data)
+        return render_template('home.html', form=myForm, league=myForm.league.data, team1=myForm.team1.data, team2=myForm.team2.data,
+                               teams_record=teams_record)
 
     return render_template('home.html', form=myForm)
 
@@ -137,8 +137,7 @@ def about():
 # Nick create this
 @app.route("/nickdev")
 def nickdev():
-    print('4 got to nick dev')
-    return render_template('nickdev.html')
+    return render_template('nickdev.html', url = '/static/new_plot.png')
 
 
 ## @app.route('/plot.png')
@@ -182,24 +181,33 @@ def create_team_records_fig(team_records, team1, team2):
         elif winner == team2:
             colors[i+n_games] = 'red'
         i = i+1
+        print(i)
 
-    #fig = plt.figure()
-    plt.scatter(x, y, s=sizes * 1000 * (6 - n_games), c=colors, alpha=0.4)
-    plt.xlim([0, n_games + 1])
-    plt.ylim([0, y_height + 1])
-    plt.xticks(x[0:n_games],df['match_date'])
-    plt.yticks([1, y_height],[team1, team2])
+    fig = plt.figure()
+    ax1 = fig.add_subplot(1,1,1)
+    ax1.scatter(x, y, s=sizes * 1000 * (6 - n_games), c=colors, alpha=0.4)
+    ax1.set_xlim([0, n_games + 1])
+    ax1.set_ylim([0, y_height + 1])
+    ax1.set_xticks(x[0:n_games])
+    ax1.set_xticklabels(df['match_date'])
+    ax1.set_yticks([1, y_height])
+    ax1.set_yticklabels([team1, team2])
     i = 0
     while i < n_games * 2:
-        plt.text(x[i], y[i], bubble_text[i],
+        ax1.text(x[i], y[i], bubble_text[i],
                      horizontalalignment='center',
                      verticalalignment='center')
         i = i + 1
-    print('2 got to end of create_team_records_fig')
     import os
-    my_path = os.path.abspath(__file__)
-    plt.savefig(my_path + '/static/new_plot.png', bbox_inches='tight')
-    return 
+    my_path = os.getcwd()
+    url = '/static/new_plot.png'
+    print("3 url: " + url)
+    fig.savefig((my_path+url), bbox_inches='tight')
+    plt.close()
+    print('4 saved .png and closed plt')
+    name = str(team1) + " vs. "+ str(team2)
+    print((my_path + url))
+    print('2 got to end of create_team_records_fig')
 
 
 
