@@ -6,7 +6,7 @@ data_path <- "/Users/nickvarberg/Downloads/beat-the-bookie-odds-series-football-
 
 ##### change data ####
 ##odds_series.csv 
-series      <- fread(paste0(data_path, "odds_series.csv"))
+series <- fread(paste0(data_path, "odds_series.csv"))
 series_matches <- fread(paste0(data_path, "odds_series_matches.csv"))
 
 ## odds_series_b.csv
