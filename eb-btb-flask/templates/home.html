@@ -1,58 +1,55 @@
 {% extends "layout.html" %}
 {% block content %}
-
-  <!-- <div class="plot"> -->
-    <!-- <h1>Plot</h1> -->
-    <!-- <p>{{ name }}</p> -->
-    <!-- <img src="/plot.png" alt="Chart" height="42" width="42"> -->
-    <!-- <img src="/plot.png" alt="Chart"> -->
-    <!-- <img src="/plot.png" alt="Chart" height="42" width="42"> -->
-    <!-- <img src={{ url }} alt="Chart" height="42" width="42"> -->
-  <!-- </div> -->
   <h2>EU Football league betting data!<h2>
-    <div class="input-group mb-3">
-      <div class="input-group-prepend">
-        <form>
-          <select id="league" class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <option value="" selected disabled hidden>League &#9660;</option>
-            {% for league in leagues %}
-              <option>{{ league[0] }}</option>
-            {% endfor %}
-          </select>
-        </form>
+    <form class="mb-5" method="POST">
+      {{ form.csrf_token }}
+      <div class="form-group">
+        {{ form.league.label(class="form-control-label") }}
+        {{ form.league(class="form-control form-control-lg") }}
       </div>
-      <input type="text" class="form-control" aria-label="Text input with dropdown button">
-    </div>
-  <div class="input-group mb-3">
-    <div class="input-group-prepend">
-      <select class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        <option value="" selected disabled hidden>Team 1 &#9660;</option>
-        {% for team in teams %}
-          <option>{{ team[0] }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <input type="text" class="form-control" aria-label="Text input with dropdown button">
-  </div>
-  <div class="input-group mb-3">
-    <div class="input-group-prepend">
-      <select id="ddlViewBy" class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        <option value="" selected disabled hidden>Team 2 &#9660;</option>
-        {% for team in teams %}
-          <option>{{ team[0] }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <input type="text" class="form-control" aria-label="Text input with dropdown button">
-  </div>
-  <div class="container-graph">
-    <h3>Graph Here</h3>
-  </div>
+      <div class="form-group">
+        {{ form.team1.label(class="form-control-label") }}
+        {{ form.team1(class="form-control form-control-lg") }}
+      </div>
+      <div class="form-group">
+        {{ form.team2.label(class="form-control-label") }}
+        {{ form.team2(class="form-control form-control-lg") }}
+      </div>
+      <div class="form-group">
+        {{ form.submit(class="btn btn-outline-info") }}
+      </div>
+    </form>
 
-  
+    <div class="container-graph">
+      {% if league %}
+        <h2>League: {{ league }}</h2>
+        <h3>Team 1: {{ team1 }}</h3>
+        <h3>Team 2: {{ team2 }}</h3>
+        {% for row in teams_record %}
+          <h4><b>Date:</b> {{ row[0] }} <b>Home:</b> {{ row[1] }} <b>Away:</b> {{ row[2] }} <b>Winner:</b> {{ row[3] }}</h4>
+        {% endfor %}
+      {% endif %}
+    </div>
 
-  <script language="javascript" type="text/javascript">
-    var league = document.getElementById("league");
-    var strUser = team1.options[team1.selectedIndex].value;
-  </script>
+    <script>
+      let user_league = document.getElementById('league');
+      let user_team1 = document.getElementById('team1');
+      let user_team2 = document.getElementById('team2');
+
+      user_league.onchange = function() {
+        league = user_league.value;
+
+        fetch('/' + league).then(function(response) {
+          response.json().then(function(data) {
+            let optionHTML = '';
+            for (let team of data.teams) {
+              optionHTML += '<option>' + team.name + '</option>';
+            }
+
+            user_team1.innerHTML = optionHTML;
+            user_team2.innerHTML = optionHTML;
+          });
+        });
+      }
+    </script>
 {% endblock content %}
