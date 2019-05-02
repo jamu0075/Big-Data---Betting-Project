@@ -171,17 +171,17 @@ def plot_team_records():
     FigureCanvas(fig).print_png(output)
     return Response(output.getvalue(), mimetype='image/png')
 
-@app.route('/performance_team1')
-def plot_performance_team():
-    #fig = performance_of_teams_fig(teams.team1, teams.team1_full_record)
-    fig = create_team_records_fig(teams.team_records, teams.team1, teams.team2)
-    output = io.BytesIO()
-    FigureCanvas(fig).print_png(output)
-    return Response(output.getvalue(), mimetype='image/png')
+## @app.route('/performance_team1')
+## def plot_performance_team():
+##     #fig = performance_of_teams_fig(teams.team1, teams.team1_full_record)
+##     fig = create_team_records_fig(teams.team_records, teams.team1, teams.team2)
+##     output = io.BytesIO()
+##     FigureCanvas(fig).print_png(output)
+##     return Response(output.getvalue(), mimetype='image/png')
 
 
-def performance_of_teams_fig(team1, team_full_record):
-    df = pd.DataFrame(data=list(team_records), columns = ['winning_team', 'closing_odds_outcome'])
+def performance_of_teams_fig(team_full_record, team1):
+    df = pd.DataFrame(data=list(team_full_record), columns = ['winning_team', 'closing_odds_outcome'])
     n_games = len(df['winning_team'])
     size_of_each_bet = 100
     return_on_bet = (df['winning_team'] == team1)*df['closing_odds_outcome']*size_of_each_bet
@@ -201,11 +201,10 @@ def performance_of_teams_fig(team1, team_full_record):
             colors[i] = 'g'
         else:
             colors[i] = 'r'
-    fig = plt.figure(tight_layout = True)
-    fig.add_subplot(1,1,1)
+    #fig = plt.figure(tight_layout = True)
+    #fig.add_subplot(1,1,1)
     plt.scatter(x, winnings, c = colors)
-    plt.close()
-    return fig
+    plt.title('Return when betting $100 on ' + team1 + ' each game', fontsize=16)
 
 def create_team_records_fig(team_records, team1, team2):
     df = pd.DataFrame(data=list(team_records), columns=['match_date', 'home_team', 'away_team', 'winning_team', 'home_closing', 'away_closing']) # need list of tuples instead of tuple of tuples
@@ -242,8 +241,8 @@ def create_team_records_fig(team_records, team1, team2):
         i = i+1
         print(i)
 
-    fig = plt.figure(tight_layout = True)
-    ax1 = fig.add_subplot(1,1,1)
+    fig = plt.figure(figsize=(8, 16), tight_layout = True)
+    ax1 = fig.add_subplot(3,1,1)
     ax1.scatter(x, y, s=sizes * 1000 * (6 - n_games), c=colors, alpha=0.4)
     ax1.set_xlim([0, n_games + 1])
     ax1.set_ylim([0, y_height + 1])
@@ -262,7 +261,15 @@ def create_team_records_fig(team_records, team1, team2):
     url = '/static/new_plot.png'
     #print("3 url: " + url)
     #fig.savefig((my_path+url), bbox_inches='tight')
+
+    fig.add_subplot(3,1,2)
+    performance_of_teams_fig(teams.team1_full_record, teams.team1)
+
+    fig.add_subplot(3,1,3)
+    performance_of_teams_fig(teams.team2_full_record, teams.team2)
+    
     plt.close()
+    
     return fig
     #print('4 saved .png and closed plt')
     #name = str(team1) + " vs. "+ str(team2)
