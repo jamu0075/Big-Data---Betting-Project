@@ -2,11 +2,14 @@
 {% block content %}
 <h2> {{title}} </h2>
 
+Please select a league:
+<br> 
 <form class="form-inline" method="POST" action="{{ url_for('response') }}">
 <!-- <form class="form-inline" method="POST"> -->
   <div class="form-group">
     <div class="input-group">
-        <span class="input-group-addon">Please select a league: <br> </span>
+        <!-- <span class="input-group-addon">Please select a league: <br> </span> -->
+        <span class="input-group-addon"></span>
             <select name="comp_select" class="selectpicker form-control">
               {% for o in data %}
               <option value="{{ o.name }}">{{ o.name }}</option>

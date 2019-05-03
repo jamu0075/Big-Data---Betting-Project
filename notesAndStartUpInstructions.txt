@@ -36,6 +36,7 @@ How do not do so much rerouting?
 <dropdown>" and the submit button?
 4. Explain to me the what's going on in erikTest.html
 and submit.html
+5. What does "methods=['GET', 'POST']" do?
 
 ****************************************************
 

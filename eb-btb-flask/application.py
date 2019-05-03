@@ -14,9 +14,15 @@ import io
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import confusion_matrix
 from flask import Response
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+
+from sklearn import svm, datasets
+from sklearn.utils.multiclass import unique_labels
+
 ######################################
 
 # EB looks for an 'app' callable by default.
@@ -167,6 +173,14 @@ def response():
     # print(X_test)
     return render_template('response.html', title=league_selected) # just to see what select is
 
+@app.route("/testResponse", methods=['GET', 'POST'])
+def testResponse():
+    # print(request.data)
+    user_odds = request.form.to_dict()
+    user_odds = {key:(value if value is '' else float(value)) for key, value in user_odds.items()}
+    print(user_odds)
+    return render_template('testResponse.html', title="test")
+
 @app.route('/plot.txt')
 def generate_plot():
     fig = create_figure()
@@ -174,12 +188,29 @@ def generate_plot():
     FigureCanvas(fig).print_png(output)
     return Response(output.getvalue(), mimetype='image/png')
 
+@app.route('/test', methods=['GET', 'POST'])
+def test():
+    return render_template('test.html')
+
 def create_figure():
-    fig = Figure()
-    axis = fig.add_subplot(1, 1, 1)
-    xs = range(100)
-    ys = [np.random.randint(1, 50) for x in xs]
-    axis.plot(xs, ys)
+    # fig = Figure()
+    # axis = fig.add_subplot(1, 1, 1)
+    # xs = range(100)
+    # ys = [np.random.randint(1, 50) for x in xs]
+    # axis.plot(xs, ys)
+    iris = datasets.load_iris()
+    X = iris.data
+    y = iris.target
+    class_names = iris.target_names
+
+    # Split the data into a training set and a test set
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+
+    # Run classifier, using a model that is too regularized (C too low) to see
+    # the impact on the results
+    classifier = svm.SVC(kernel='linear', C=0.01)
+    y_pred = classifier.fit(X_train, y_train).predict(X_test)
+    fig = plot_confusion_matrix(y_test, y_pred, classes=class_names, normalize=False)
     return fig
 
 def construct_ml_model(df):
@@ -191,7 +222,70 @@ def construct_ml_model(df):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_prop)
     rf_clf = RandomForestClassifier(n_estimators=num_trees)
     rf_clf.fit(X_train, y_train)
+    y_pred = RF_clf.predict(X_test)
+    accuracy = sum(y_pred==y_test)/len(y_test)
     return(rf_clf, X_test)
+
+def plot_confusion_matrix(conf_mat):
+    fig = Figure()
+
+    plt.matshow(conf_mat)
+
+def pred_team_with_higher_odds(X_test):
+    predictions = ["home" if odds_diff<0 else "away" for odds_diff in X_test['home_away_diff_0']]
+    return(np.array(predictions))
+
+def plot_confusion_matrix(y_true, y_pred, classes,
+                          normalize=False,
+                          title=None,
+                          cmap=plt.cm.Blues):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    if not title:
+        if normalize:
+            title = 'Normalized confusion matrix'
+        else:
+            title = 'Confusion matrix, without normalization'
+
+    # Compute confusion matrix
+    cm = confusion_matrix(y_true, y_pred)
+    # Only use the labels that appear in the data
+    classes = classes[unique_labels(y_true, y_pred)]
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        # print("Normalized confusion matrix")
+
+    # print(cm)
+
+    fig = Figure()
+    ax = fig.add_subplot(1,1,1)
+    im = ax.imshow(cm, interpolation='nearest', cmap=cmap)
+    ax.figure.colorbar(im, ax=ax)
+    # We want to show all ticks...
+    ax.set(xticks=np.arange(cm.shape[1]),
+           yticks=np.arange(cm.shape[0]),
+           # ... and label them with the respective list entries
+           xticklabels=classes, yticklabels=classes,
+           title=title + " (N={})".format(len(y_pred)),
+           ylabel='True label',
+           xlabel='Predicted label')
+
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+             rotation_mode="anchor")
+
+    # Loop over data dimensions and create text annotations.
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            ax.text(j, i, format(cm[i, j], fmt),
+                    ha="center", va="center",
+                    color="white" if cm[i, j] > thresh else "black")
+    fig.tight_layout()
+    return fig
 
 ######################################################################
 ######################################################################
