@@ -17,11 +17,11 @@ app.config['SECRET_KEY'] = SECRET_KEY
 # A database class to use the DB as an object
 class Database:
     def __init__(self):
-        host = 'btb-db-instance.cduiw3cccdch.us-east-1.rds.amazonaws.com'
-        port = 3306
-        user = 'masterUser'
-        password = 'supremedbpass2002'
-        db = 'btb-db'
+        host =
+        port = 
+        user =
+        password =
+        db =
 
         print('Attempting to connect...')
         try:
