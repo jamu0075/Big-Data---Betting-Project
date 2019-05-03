@@ -55,6 +55,23 @@ Maybe: Spark, chart.js, docker
 
 
 ****************************************************
+GENERAL PROJECT NOTES
+
+1. Shouldn't expect to be able to do better than bookies
+with simple ML model. They're odds takes into account
+a lot
+
+****************************************************
+
+
+****************************************************
+TO DOs
+
+1. Look at expected return
+
+****************************************************
+
+****************************************************
 
 
 ****************************************************
