@@ -1,6 +1,32 @@
 {% extends "layout.html" %}
 {% block content %}
-  <h2>Erik Test</h2>
+<h2> {{title}} </h2>
 
-  <img src="/plot.png" alt="my plot">
+<!-- <img src="/plot.txt" alt="my plot"> -->
+
+<!-- <form class="mb-5" method="POST">
+      {{ form.csrf_token }}
+      <div class="form-group">
+        {{ form.league.label(class="form-control-label") }}
+        {{ form.league(class="form-control form-control-lg") }}
+      </div>
+      <div class="form-group">
+        {{ form.team1.label(class="form-control-label") }}
+        {{ form.team1(class="form-control form-control-lg") }}
+      </div>
+      <div class="form-group">
+        {{ form.team2.label(class="form-control-label") }}
+        {{ form.team2(class="form-control form-control-lg") }}
+      </div>
+      <div class="form-group">
+        {{ form.submit(class="btn btn-outline-info") }}
+      </div>
+    </form> -->
+<select name="league" method="GET" action="/">
+  <option value="{{leagues[0]}}" selected>{{leagues[0]}}</option>
+  {% for league in leagues[1:] %}
+    <option value="{{league}}">{{league}}</option>
+  {% endfor %}
+</select>
+<input type="submit" value="Submit">
 {% endblock content %}

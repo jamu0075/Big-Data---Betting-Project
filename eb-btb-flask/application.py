@@ -7,6 +7,18 @@ import os
 import pymysql
 from flaskext.mysql import MySQL
 
+######################################
+# Erik Added
+import numpy as np
+import io
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from flask import Response
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
+######################################
+
 # EB looks for an 'app' callable by default.
 app = Flask(__name__)
 
@@ -81,10 +93,13 @@ myDB = Database()
 # Home page
 @app.route("/", methods=['GET', 'POST'])
 def home():
-
+    # sql = "SHOW columns FROM outcomeFeatures2"
+    # myDB.curs.execute(sql)
+    # print(myDB.curs.fetchall())
     myForm = Form(request.form)
     #Fetch form values from the database
     myForm.league.choices = [(league[0], league[0]) for league in myDB.get_leagues()]
+    # print(myForm.league.choices)
     myForm.team1.choices = [(team[0], team[0]) for team in myDB.get_teams()]
     myForm.team2.choices = [(team[0], team[0]) for team in myDB.get_teams()]
 
@@ -119,6 +134,67 @@ def team(league):
 def about():
     return render_template('about.html', title="About")
 
+
+#########################################################
+# Erik Added Code
+#########################################################
+
+# Erik's test page
+@app.route('/erikTest', methods=['GET', 'POST'])
+def index():
+    leagues = [{'name': league[0]} for league in myDB.get_leagues()]
+    return render_template(
+        'submit.html',
+        data=leagues, title="Erik Test")
+
+@app.route("/response" , methods=['GET', 'POST'])
+def response():
+    sql = "SHOW columns FROM outcomeFeatures2"
+    myDB.curs.execute(sql)
+    print(myDB.curs.fetchall())
+
+    league_selected = request.form.get('comp_select')
+    columns_wanted = ", ".join(['outcome', 'home_opening', 'home_min'])
+    sql = "SELECT {} FROM outcomeFeatures2 WHERE league = '{}'".format(columns_wanted, league_selected)
+    # myDB.curs.execute(sql)
+    # print(myDB.curs.fetchall())
+    df = pd.read_sql(sql, myDB.conn)
+    print(df)
+    model, X_test = construct_ml_model(df)
+    test_data = pd.DataFrame({'home_opening': [3.01], 'home_min': [1.01]})
+    print(test_data)
+    print(model.predict(test_data))
+    # print(X_test)
+    return render_template('response.html', title=league_selected) # just to see what select is
+
+@app.route('/plot.txt')
+def generate_plot():
+    fig = create_figure()
+    output = io.BytesIO()
+    FigureCanvas(fig).print_png(output)
+    return Response(output.getvalue(), mimetype='image/png')
+
+def create_figure():
+    fig = Figure()
+    axis = fig.add_subplot(1, 1, 1)
+    xs = range(100)
+    ys = [np.random.randint(1, 50) for x in xs]
+    axis.plot(xs, ys)
+    return fig
+
+def construct_ml_model(df):
+    # Set hyper parameter values
+    num_trees = 10 # number of trees in random forest
+    test_prop = 0.1 # proportion of data to use for testing
+    X = df.drop('outcome', axis=1)
+    y = df['outcome']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_prop)
+    rf_clf = RandomForestClassifier(n_estimators=num_trees)
+    rf_clf.fit(X_train, y_train)
+    return(rf_clf, X_test)
+
+######################################################################
+######################################################################
 
 # run the app.
 if __name__ == "__main__":
