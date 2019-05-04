@@ -70,6 +70,7 @@ class Form(FlaskForm):
     league = SelectField('League', choices=[])
     team1 = SelectField('Team 1', choices=[])
     team2 = SelectField('Team 2', choices=[])
+    chartType = SelectField('Chart Type', choices=[('line', 'Line'), ('bar','Bar')])
 
     submit = SubmitField('Submit')
 
@@ -90,9 +91,11 @@ def home():
 
     # Handle form POST, update page
     if request.method == 'POST':
-        teams_record = myDB.get_teams_record(myForm.team1.data, myForm.team2.data)
+        #teams_record = myDB.get_teams_record(myForm.team1.data, myForm.team2.data)
+        #Passable vars
+        #league=myForm.league.data, team1=myForm.team1.data, team2=myForm.team2.data,
 
-        return render_template('home.html', form=myForm, league=myForm.league.data, team1=myForm.team1.data, team2=myForm.team2.data, teams_record=teams_record)
+        return render_template('home.html', form=myForm, chartType=myForm.chartType.data)
 
     return render_template('home.html', form=myForm)
 

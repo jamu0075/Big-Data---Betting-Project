@@ -16,11 +16,15 @@
         {{ form.team2(class="form-control form-control-lg") }}
       </div>
       <div class="form-group">
+        {{ form.chartType.label(class="form-control-label") }}
+        {{ form.chartType(class="form-control form-control-lg") }}
+      </div>
+      <div class="form-group">
         {{ form.submit(class="btn btn-outline-info") }}
       </div>
     </form>
 
-    <canvas id="myChart"></canvas>
+    <canvas id="myChart" chartType=chartType></canvas>
 
     <div class="container-graph">
       {% if league %}
@@ -60,11 +64,11 @@
 
       let chartElement = document.getElementById('myChart').getContext('2d');
       let chart = new Chart(chartElement, {
-        type:'line',
+        type: document.getElementById('chartType').value,
         data:{
           labels:["1", "2", "3", "4", "5", "6"],
           datasets:[{
-            label: 'Something Cool',
+            label: user_team1.value,
             data:[
               1,
               2,
@@ -88,7 +92,7 @@
             lineTension: 0.01,
           },
           {
-            label: 'Something Cooler',
+            label: user_team2.value,
             data:[
               4,
               2.5,
@@ -118,15 +122,28 @@
             fontSize: 25
           },
           legend: {
-            position: 'bottom',
+            position: 'left',
           },
           tooltips: {
-            position: 'nearest'
+            mode: 'nearest',
+            intersect: false
           },
           scales: {
+            xAxes: [{
+              scaleLabel: {
+                display: true,
+                labelString: 'Some Other Label',
+                fontSize: 25
+              }
+            }],
             yAxes: [{
               ticks: {
                 beginAtZero: true
+              },
+              scaleLabel: {
+                display: true,
+                labelString: 'Some Label',
+                fontSize: 25
               }
             }]
           }
