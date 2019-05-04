@@ -20,6 +20,8 @@
       </div>
     </form>
 
+    <canvas id="myChart"></canvas>
+
     <div class="container-graph">
       {% if league %}
         <h2>League: {{ league }}</h2>
@@ -51,5 +53,84 @@
           });
         });
       }
+
+      //Global Chart options
+      Chart.defaults.global.defaultFontSize = 18;
+      Chart.defaults.global.defauultFontColor = '#777';
+
+      let chartElement = document.getElementById('myChart').getContext('2d');
+      let chart = new Chart(chartElement, {
+        type:'line',
+        data:{
+          labels:["1", "2", "3", "4", "5", "6"],
+          datasets:[{
+            label: 'Something Cool',
+            data:[
+              1,
+              2,
+              3,
+              2.75,
+              2.5,
+              1
+            ],
+            borderWidth: 1.5,
+            borderColor: '#4682b4',
+            hoverBorderWidth: 2,
+
+            backgroundColor: 'blue',
+            pointBackgroundColor: 'blue',
+            pointBorderColor: 'black',
+            pointBorderWidth: 2,
+            pointRadius: 6,
+            pointHoverRadius: 8,
+
+            fill: false,
+            lineTension: 0.01,
+          },
+          {
+            label: 'Something Cooler',
+            data:[
+              4,
+              2.5,
+              3,
+              1
+            ],
+
+            borderWidth: 1.5,
+            borderColor: '#cd5c5c',
+            hoverBorderWidth: 2,
+
+            backgroundColor: 'red',
+            pointBackgroundColor: 'red',
+            pointBorderColor: 'black',
+            pointBorderWidth: 2,
+            pointRadius: 6,
+            pointHoverRadius: 8,
+
+            fill: false,
+            lineTension: 0.01,
+          }]
+        },
+        options:{
+          title: {
+            display: true,
+            text: 'A Good Title',
+            fontSize: 25
+          },
+          legend: {
+            position: 'bottom',
+          },
+          tooltips: {
+            position: 'nearest'
+          },
+          scales: {
+            yAxes: [{
+              ticks: {
+                beginAtZero: true
+              }
+            }]
+          }
+        }
+      });
     </script>
 {% endblock content %}
