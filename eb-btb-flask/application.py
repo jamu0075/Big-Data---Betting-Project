@@ -87,7 +87,6 @@ class Form(FlaskForm):
     league = SelectField('League', choices=[])
     team1 = SelectField('Team 1', choices=[])
     team2 = SelectField('Team 2', choices=[])
-
     submit = SubmitField('Submit')
 
 # global class that nick created for visuals
@@ -102,7 +101,7 @@ class Teams:
 #=========================================================
 # A database connection instance for global use
 myDB = Database()
-teams = Teams()
+teams = Teams() # Nick needs this for his visuals
 #=========================================================
 
 # Home page
@@ -142,7 +141,6 @@ def team(league):
     # Create a list of dictionary objects for dropdown
     teamList = []
 
-    
     for team in teams:
         teamObj = {}
         teamObj['name'] = team[0]
@@ -156,7 +154,6 @@ def about():
     return render_template('about.html', title="About")
 
 
-# Nick create this
 @app.route("/nickdev")
 def nickdev():
     return render_template('nickdev.html', plot_title = (teams.team1 + " vs. " + teams.team2))
@@ -164,38 +161,12 @@ def nickdev():
 
 @app.route('/team_records')
 def plot_team_records():
-    # POST to here. get league, team1, team2. send to create_team_record_fig(in here)
+    # fig is created in function below
     fig = create_team_records_fig(teams.team_records, teams.team1, teams.team2)
     output = io.BytesIO()
     FigureCanvas(fig).print_png(output)
     return Response(output.getvalue(), mimetype='image/png')
 
-
-def performance_of_teams_fig(team_full_record, team1):
-    df = pd.DataFrame(data=list(team_full_record), columns = ['winning_team', 'closing_odds_outcome'])
-    n_games = len(df['winning_team'])
-    size_of_each_bet = 100
-    return_on_bet = (df['winning_team'] == team1)*df['closing_odds_outcome']*size_of_each_bet
-    winnings = np.zeros(n_games)
-    winnings[0] = -size_of_each_bet + return_on_bet.values[0]
-    i = 1
-    while i < n_games:
-        winnings[i] = winnings[i-1] - size_of_each_bet + return_on_bet.values[i]
-        i = i+1
-    x = np.linspace(1, n_games, n_games)
-    plt.plot(x,winnings, c = 'grey')
-    plt.hlines(y=0, xmin=0, xmax = n_games)
-    green = winnings > 0
-    colors = ['']*len(green)
-    for i in range(len(green)):
-        if green[i] == True:
-            colors[i] = 'g'
-        else:
-            colors[i] = 'r'
-    #fig = plt.figure(tight_layout = True)
-    #fig.add_subplot(1,1,1)
-    plt.scatter(x, winnings, c = colors)
-    plt.title('Return when betting $100 on ' + team1 + ' each game', fontsize=16)
 
 def create_team_records_fig(team_records, team1, team2):
     df = pd.DataFrame(data=list(team_records), columns=['match_date', 'home_team', 'away_team', 'winning_team', 'home_closing', 'away_closing']) # need list of tuples instead of tuple of tuples
@@ -247,6 +218,7 @@ def create_team_records_fig(team_records, team1, team2):
                      horizontalalignment='center',
                      verticalalignment='center')
         i = i + 1
+
     # Next plot
     df = pd.DataFrame(data=list(teams.team1_full_record), columns = ['winning_team', 'closing_odds_outcome'])
     n_games = len(df['winning_team'])
@@ -269,8 +241,6 @@ def create_team_records_fig(team_records, team1, team2):
             colors[i] = 'g'
         else:
             colors[i] = 'r'
-    #fig = plt.figure(tight_layout = True)
-    #fig.add_subplot(1,1,1)
     plt.scatter(x, winnings, c = colors)
 
     # last scatter plot on same axes as first scatter
@@ -295,15 +265,10 @@ def create_team_records_fig(team_records, team1, team2):
             colors[i] = 'g'
         else:
             colors[i] = 'r'
-    #fig = plt.figure(tight_layout = True)
-    #fig.add_subplot(1,1,1)
     plt.scatter(x, winnings, c = colors, marker = 'v')
     plt.legend(labels = [teams.team1, teams.team2])
     plt.title('Return when betting $100 each game', fontsize=16)
-    
-    
-    plt.close()
-    
+    plt.close() # plt.close() is needed or my mac gets a weird error
     return fig
 
     
