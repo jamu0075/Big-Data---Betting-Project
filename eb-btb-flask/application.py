@@ -12,12 +12,12 @@ import numpy as np
 import pandas as pd
 import io
 import matplotlib
+matplotlib.use('agg')
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
 #Erik added these
-matplotlib.use('agg')
 from sklearn.model_selection import train_test_split, cross_val_predict, cross_val_score, cross_validate
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix, accuracy_score, f1_score
@@ -46,8 +46,8 @@ class Database:
     def __init__(self):
         host = 'btb-db-instance.cduiw3cccdch.us-east-1.rds.amazonaws.com'
         port = 3306
-        user =
-        password =
+        user = 'masterUser'
+        password = 'supremedbpass2002'
         db = 'btb-db'
 
         print('Attempting to connect...')
