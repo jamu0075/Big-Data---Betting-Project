@@ -11,6 +11,8 @@ from flaskext.mysql import MySQL
 import numpy as np
 import pandas as pd
 import io
+import matplotlib
+matplotlib.use('agg')
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
@@ -149,14 +151,14 @@ def team(league):
     return jsonify({'teams' : teamList})
 
 # About page
-@app.route("/about")
-def about():
-    return render_template('about.html', title="About")
+# @app.route("/about")
+# def about():
+#     return render_template('about.html', title="About")
+#
 
-
-@app.route("/nickdev")
-def nickdev():
-    return render_template('nickdev.html', plot_title = (teams.team1 + " vs. " + teams.team2))
+# @app.route("/nickdev")
+# def nickdev():
+#     return render_template('nickdev.html', plot_title = (teams.team1 + " vs. " + teams.team2))
 
 
 @app.route('/team_records')
@@ -212,6 +214,8 @@ def create_team_records_fig(team_records, team1, team2):
     ax1.set_xticklabels(df['match_date'])
     ax1.set_yticks([1, y_height])
     ax1.set_yticklabels([team1, team2])
+    ax1.set_title('Final Odds with Outcome')
+
     i = 0
     while i < n_games * 2:
         ax1.text(x[i], y[i], bubble_text[i],
@@ -255,9 +259,7 @@ def create_team_records_fig(team_records, team1, team2):
         winnings[i] = winnings[i-1] - size_of_each_bet + return_on_bet.values[i]
         i = i+1
     x = np.linspace(1, n_games, n_games)
-    fig.add_subplot(2,1,2)
-    plt.plot(x,winnings, c = 'grey', linestyle = 'dashed')
-    plt.hlines(y=0, xmin=0, xmax = n_games)
+
     green = winnings > 0
     colors = ['']*len(green)
     for i in range(len(green)):
@@ -265,13 +267,19 @@ def create_team_records_fig(team_records, team1, team2):
             colors[i] = 'g'
         else:
             colors[i] = 'r'
+
+    fig.add_subplot(2,1,2)
+    plt.plot(x,winnings, c = 'grey', linestyle = 'dashed')
+    plt.hlines(y=0, xmin=0, xmax = n_games)
     plt.scatter(x, winnings, c = colors, marker = 'v')
     plt.legend(labels = [teams.team1, teams.team2])
     plt.title('Return when betting $100 each game', fontsize=16)
+    plt.xlabel('Games')
+    plt.ylabel('Total Winnings')
     plt.close() # plt.close() is needed or my mac gets a weird error
     return fig
 
-    
+
 
 # run the app.
 if __name__ == "__main__":
