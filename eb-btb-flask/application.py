@@ -28,11 +28,11 @@ app.config['SECRET_KEY'] = SECRET_KEY
 # A database class to use the DB as an object
 class Database:
     def __init__(self):
-        host = 'btb-db-instance.cduiw3cccdch.us-east-1.rds.amazonaws.com'
-        port = 3306
-        user = 'masterUser'
-        password = 'supremedbpass2002'
-        db = 'btb-db'
+        host = os.environ['RDS_HOSTNAME']
+        port = os.environ['RDS_PORT']
+        user = os.environ['RDS_USERNAME']
+        password = os.environ['RDS_PASSWORD']
+        db = os.environ['RDS_DB_NAME']
 
         print('Attempting to connect...')
         try:
@@ -272,9 +272,7 @@ def create_team_records_fig(team_records, team1, team2):
 
 # run the app.
 if __name__ == "__main__":
-
     # Setting debug to True enables debug output. This line should be
     # removed before deploying a production app.
     app.debug = True
     app.run()
-    print('got to running the app')
