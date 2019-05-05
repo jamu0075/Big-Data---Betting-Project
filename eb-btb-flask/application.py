@@ -30,9 +30,9 @@ class Database:
     def __init__(self):
         host = 'btb-db-instance.cduiw3cccdch.us-east-1.rds.amazonaws.com'
         port = 3306
-        user = 
-        password =
-        db =
+        user = 'masterUser'
+        password = 'supremedbpass2002'
+        db = 'btb-db'
 
         print('Attempting to connect...')
         try:
@@ -150,17 +150,6 @@ def team(league):
 
     return jsonify({'teams' : teamList})
 
-# About page
-# @app.route("/about")
-# def about():
-#     return render_template('about.html', title="About")
-#
-
-# @app.route("/nickdev")
-# def nickdev():
-#     return render_template('nickdev.html', plot_title = (teams.team1 + " vs. " + teams.team2))
-
-
 @app.route('/team_records')
 def plot_team_records():
     # fig is created in function below
@@ -214,7 +203,7 @@ def create_team_records_fig(team_records, team1, team2):
     ax1.set_xticklabels(df['match_date'])
     ax1.set_yticks([1, y_height])
     ax1.set_yticklabels([team1, team2])
-    ax1.set_title('Final Odds with Outcome')
+    ax1.set_title(team1 + ' VS. ' + team2 + ' Final Odds')
 
     i = 0
     while i < n_games * 2:
@@ -274,8 +263,8 @@ def create_team_records_fig(team_records, team1, team2):
     plt.scatter(x, winnings, c = colors, marker = 'v')
     plt.legend(labels = [teams.team1, teams.team2])
     plt.title('Return when betting $100 each game', fontsize=16)
-    plt.xlabel('Games')
-    plt.ylabel('Total Winnings')
+    plt.xlabel('Number of Games')
+    plt.ylabel('Total Return($)')
     plt.close() # plt.close() is needed or my mac gets a weird error
     return fig
 
