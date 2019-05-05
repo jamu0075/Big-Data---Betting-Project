@@ -226,9 +226,9 @@ def create_team_records_fig(team_records, team1, team2):
             sizes[i+n_games] = df['home_closing'].values[i]
         winner = df['winning_team'].values[i]
         if winner == team1:
-            colors[i] = 'blue'
+            colors[i] = 'green'
         elif winner == team2:
-            colors[i+n_games] = 'red'
+            colors[i+n_games] = 'green'
         i = i+1
         print(i)
 
