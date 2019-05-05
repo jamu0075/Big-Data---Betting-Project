@@ -12,9 +12,9 @@ from flaskext.mysql import MySQL
 import numpy as np
 import io
 import pandas as pd
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_predict, cross_val_score, cross_validate
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, accuracy_score, f1_score
 from flask import Response
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -22,6 +22,7 @@ import matplotlib.pyplot as plt
 
 from sklearn import svm, datasets
 from sklearn.utils.multiclass import unique_labels
+from sklearn.externals import joblib
 
 ######################################
 
@@ -31,6 +32,13 @@ app = Flask(__name__)
 #wtf secret key
 SECRET_KEY = os.urandom(32)
 app.config['SECRET_KEY'] = SECRET_KEY
+
+times_wanted = ['0', '23', '47', '71']
+predictors_wanted = [['home_'+time, 'away_'+time, 'draw_'+time] for time in times_wanted]
+predictors_wanted = [item for sublist in predictors_wanted for item in sublist]
+colms_wanted = predictors_wanted.copy()
+colms_wanted.append('outcome')
+colms_wanted_as_str = ', '.join(colms_wanted)
 
 # A database class to use the DB as an object
 class Database:
@@ -99,13 +107,10 @@ myDB = Database()
 # Home page
 @app.route("/", methods=['GET', 'POST'])
 def home():
-    # sql = "SHOW columns FROM outcomeFeatures2"
-    # myDB.curs.execute(sql)
-    # print(myDB.curs.fetchall())
     myForm = Form(request.form)
+
     #Fetch form values from the database
     myForm.league.choices = [(league[0], league[0]) for league in myDB.get_leagues()]
-    # print(myForm.league.choices)
     myForm.team1.choices = [(team[0], team[0]) for team in myDB.get_teams()]
     myForm.team2.choices = [(team[0], team[0]) for team in myDB.get_teams()]
 
@@ -146,95 +151,146 @@ def about():
 #########################################################
 
 # Erik's test page
-@app.route('/erikTest', methods=['GET', 'POST'])
-def index():
-    leagues = [{'name': league[0]} for league in myDB.get_leagues()]
-    return render_template(
-        'submit.html',
-        data=leagues, title="Erik Test")
+@app.route('/betting', methods=['GET', 'POST'])
+def betting_home():
+
+    # Retrieve possible leagues from filtered data
+    sql = 'SELECT DISTINCT league FROM filteredMatches ORDER BY league'
+    myDB.curs.execute(sql)
+    leagues = myDB.curs.fetchall()
+
+    # Put data in format for passing to html
+    leagues = [{'name': league[0]} for league in leagues]
+
+    return render_template('submit.html', data=leagues, title="Betting")
 
 @app.route("/response" , methods=['GET', 'POST'])
 def response():
-    sql = "SHOW columns FROM outcomeFeatures2"
-    myDB.curs.execute(sql)
-    print(myDB.curs.fetchall())
 
-    league_selected = request.form.get('comp_select')
-    columns_wanted = ", ".join(['outcome', 'home_opening', 'home_min'])
-    sql = "SELECT {} FROM outcomeFeatures2 WHERE league = '{}'".format(columns_wanted, league_selected)
-    # myDB.curs.execute(sql)
-    # print(myDB.curs.fetchall())
+    # Select predictors and response columns from database
+    league_selected = request.form.get('league_select')
+
+    # Get wanted columns from filtered data
+    sql = "SELECT {} FROM filteredMatches WHERE league = '{}'".format(colms_wanted_as_str, league_selected)
     df = pd.read_sql(sql, myDB.conn)
-    print(df)
-    model, X_test = construct_ml_model(df)
-    test_data = pd.DataFrame({'home_opening': [3.01], 'home_min': [1.01]})
-    print(test_data)
-    print(model.predict(test_data))
-    # print(X_test)
-    return render_template('response.html', title=league_selected) # just to see what select is
+    df = df[colms_wanted] # make sure order of columns is consistent
 
-@app.route("/testResponse", methods=['GET', 'POST'])
-def testResponse():
-    # print(request.data)
-    user_odds = request.form.to_dict()
-    user_odds = {key:(value if value is '' else float(value)) for key, value in user_odds.items()}
-    print(user_odds)
-    return render_template('testResponse.html', title="test")
+    # Split the data into a training set and a test set
+    # below keep random_state=0 for testing so get same thing everytime
+    # X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+    # X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-@app.route('/plot.txt')
-def generate_plot():
-    fig = create_figure()
+    # classifier, conf_mat = construct_random_forest_model(df)
+    construct_random_forest_model(df)
+
+    return render_template('response.html', league=league_selected)
+
+
+@app.route('/odds_form_on_submit/<string:league>', methods=['POST'])
+def odds_form_on_submit(league):
+# @app.route('/test_form_submit', methods=['POST'])
+# def test_form_submit():
+    num_folds = 20
+    results_dict = request.form.to_dict()
+    keys = list(results_dict.keys())
+    values = list(results_dict.values())
+    results_dict = dict((key, convert_str_to_float(value)) for key, value in results_dict.items())
+
+    X_test = pd.DataFrame(results_dict, index=[0])
+    X_test = X_test[predictors_wanted]
+
+    classifier = joblib.load('model.pkl')
+    prediction = classifier.predict(X_test)[0]
+
+    sql = "SELECT {} FROM filteredMatches WHERE league = '{}'".format(colms_wanted_as_str, league)
+    df = pd.read_sql(sql, myDB.conn)
+    df = df[colms_wanted]
+
+    X = df.drop('outcome', axis=1)
+    y = df['outcome']
+
+
+    y_low_odds = predict_lowest_closing_odds(X)
+    acc_low_odds = accuracy_score(y, y_low_odds)
+    acc_rf = cross_val_score(classifier, X, y, cv=num_folds).mean()
+
+    f1_rf = cross_val_score(classifier, X, y, cv=num_folds, scoring='f1_weighted').mean()
+    f1_low_odds = f1_score(y, y_low_odds, average='weighted')
+
+    return render_template('partials/oddsFormResults.html', 
+        keys=keys,
+        prediction=prediction, 
+        values=values, 
+        league=league, 
+        acc_low_odds=round(acc_low_odds, 2),
+        acc_rf=round(acc_rf, 2),
+        f1_rf=round(f1_rf, 2),
+        f1_low_odds=round(f1_low_odds, 2)
+        )
+
+@app.route('/conf_mat.txt/<string:league>')
+def generate_conf_mat(league):
+    sql = "SELECT {} FROM filteredMatches WHERE league = '{}'".format(colms_wanted_as_str, league)
+    df = pd.read_sql(sql, myDB.conn)
+    df = df[colms_wanted]
+    fig = create_conf_mat(league, df)
     output = io.BytesIO()
     FigureCanvas(fig).print_png(output)
     return Response(output.getvalue(), mimetype='image/png')
 
-@app.route('/test', methods=['GET', 'POST'])
-def test():
-    return render_template('test.html')
 
-def create_figure():
-    # fig = Figure()
-    # axis = fig.add_subplot(1, 1, 1)
-    # xs = range(100)
-    # ys = [np.random.randint(1, 50) for x in xs]
-    # axis.plot(xs, ys)
-    iris = datasets.load_iris()
-    X = iris.data
-    y = iris.target
-    class_names = iris.target_names
+###########################################################
+# HELPER FUNCTIONS
+def convert_str_to_float(value):
+    try:
+        return float(value)
+    except:
+        return 0.0
 
-    # Split the data into a training set and a test set
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
-
-    # Run classifier, using a model that is too regularized (C too low) to see
-    # the impact on the results
-    classifier = svm.SVC(kernel='linear', C=0.01)
-    y_pred = classifier.fit(X_train, y_train).predict(X_test)
-    fig = plot_confusion_matrix(y_test, y_pred, classes=class_names, normalize=False)
-    return fig
-
-def construct_ml_model(df):
-    # Set hyper parameter values
-    num_trees = 10 # number of trees in random forest
-    test_prop = 0.1 # proportion of data to use for testing
+def create_conf_mat(league, df, num_folds=20):
     X = df.drop('outcome', axis=1)
     y = df['outcome']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_prop)
+    class_names = unique_labels(y)
+
+    classifier = joblib.load('model.pkl')
+
+    y_pred = cross_val_predict(classifier, X, y, cv=num_folds)
+
+    fig = plot_confusion_matrix(y, y_pred, classes=class_names, normalize=False)
+
+    return fig
+
+def construct_random_forest_model(df):
+    # Set hyper parameter values
+    num_trees = 20 # number of trees in random forest
+    test_prop = 0.1 # proportion of data to use for testing
+    num_folds = 10 # number of cross-validation folds
+
+    # Construct X and y matrices for ML
+    X = df.drop('outcome', axis=1)
+    y = df['outcome']
+
     rf_clf = RandomForestClassifier(n_estimators=num_trees)
-    rf_clf.fit(X_train, y_train)
-    y_pred = RF_clf.predict(X_test)
-    accuracy = sum(y_pred==y_test)/len(y_test)
-    return(rf_clf, X_test)
 
-def plot_confusion_matrix(conf_mat):
-    fig = Figure()
+    # y_pred = cross_val_predict(rf_clf, X, y, cv=num_folds)
 
-    plt.matshow(conf_mat)
+    rf_clf.fit(X, y)
 
-def pred_team_with_higher_odds(X_test):
-    predictions = ["home" if odds_diff<0 else "away" for odds_diff in X_test['home_away_diff_0']]
+    # Save model
+    joblib.dump(rf_clf, 'model.pkl')
+
+    return None
+
+def predict_lowest_closing_odds(X):
+    label_dict = {0: 'home', 1: 'away', 2: 'draw'}
+    predictions = X.apply(lambda x: np.argmin([x['home_0'], x['away_0'], x['draw_0']]), axis=1)
+    predictions = predictions.apply(lambda x: label_dict[x])
     return(np.array(predictions))
 
+# def plot_confusion_matrix(y_true, y_pred, classes, accuracy,
+#                           normalize=False,
+#                           title=None,
+#                           cmap=plt.cm.Blues):
 def plot_confusion_matrix(y_true, y_pred, classes,
                           normalize=False,
                           title=None,
@@ -245,19 +301,19 @@ def plot_confusion_matrix(y_true, y_pred, classes,
     """
     if not title:
         if normalize:
-            title = 'Normalized confusion matrix'
+            title = 'Normalized Confusion Matrix'
         else:
-            title = 'Confusion matrix, without normalization'
+            title = 'Confusion Matrix without Normalization'
 
     # Compute confusion matrix
     cm = confusion_matrix(y_true, y_pred)
     # Only use the labels that appear in the data
-    classes = classes[unique_labels(y_true, y_pred)]
+    # classes = classes[unique_labels(y_true, y_pred)]
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
         # print("Normalized confusion matrix")
 
-    # print(cm)
+    # accuracy = sum(y_pred==y_true)/len(y_true)
 
     fig = Figure()
     ax = fig.add_subplot(1,1,1)
@@ -268,7 +324,8 @@ def plot_confusion_matrix(y_true, y_pred, classes,
            yticks=np.arange(cm.shape[0]),
            # ... and label them with the respective list entries
            xticklabels=classes, yticklabels=classes,
-           title=title + " (N={})".format(len(y_pred)),
+           # title=title + "  (N={}, Accuracy={})".format(len(y_pred), round(accuracy,2)),
+           title=title + "  (Total Num Games={})".format(len(y_pred)),
            ylabel='True label',
            xlabel='Predicted label')
 

@@ -10,13 +10,13 @@ Please select a league:
     <div class="input-group">
         <!-- <span class="input-group-addon">Please select a league: <br> </span> -->
         <span class="input-group-addon"></span>
-            <select name="comp_select" class="selectpicker form-control">
+            <select name="league_select" class="selectpicker form-control">
               {% for o in data %}
               <option value="{{ o.name }}">{{ o.name }}</option>
               {% endfor %}
             </select>
     </div>
-    <button type="submit" class="btn btn-default">Submit</button>
+    <button type="submit" class="btn btn-primary">Submit</button>
   </div>
 </form>
 
