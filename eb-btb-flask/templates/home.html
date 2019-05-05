@@ -1,7 +1,8 @@
 {% extends "layout.html" %}
 {% block content %}
+
   <h2>EU Football league betting data!<h2>
-    <form class="mb-5" method="POST"> <!-- if wanted to send to nick-dev, do action = "/nick-dev" -->
+    <form class="mb-5" method="POST">
       {{ form.csrf_token }}
       <div class="form-group">
         {{ form.league.label(class="form-control-label") }}

@@ -1,0 +1,110 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2> Betting for {{ league }} </h2>
+
+<script type=text/javascript>
+  $(function() {
+    // On document ready
+    var league = '{{ league }}'
+    $("#all_odds").submit(function(e) {
+
+      // Don't reload the page or do anything else that is default
+      e.preventDefault();
+
+      // Get the form data as an array of objects
+      var formData = $(this).serializeArray();
+
+
+      // Iterate through the form data and display it in the results 
+      if (false) {
+        var value, name;
+        $('#form-submit-results').empty();
+
+        for (var i = 0; i < formData.length; i++) {
+          value = formData[i].value;
+          name = formData[i].name;
+
+          $('#form-submit-results').append(
+            '<div>'+name+'</div><div>'+value+'</div>'
+            );
+        }
+        console.log(formData);
+      }
+
+
+
+      // 2nd way
+      $.post("{{ url_for('odds_form_on_submit', league='PLACEHOLDER') }}".replace("PLACEHOLDER", league), formData, function(data, textStatus, jqXHR ) {
+        // Upon successful receipt of response from backend
+        console.log(data);
+
+        $('#form-submit-results').html(data);
+      });
+
+    });
+  });
+</script>
+
+
+<form id="all_odds" method="POST">
+  <div class="form-row">
+    <div class="col-md-3 mb-3">
+      <label for="home_71">Home Odds: Opening </label>
+      <input type="text" class="form-control" name="home_71">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="home_23">Home Odds: 24 hours </label>
+      <input type="text" class="form-control" name="home_23">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="home_47">Home Odds: 48 hours </label>
+      <input type="text" class="form-control" name="home_47">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="home_0">Home Odds: Closing </label>
+      <input type="text" class="form-control" name="home_0">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="col-md-3 mb-3">
+      <label for="away_71">Away Odds: Opening</label>
+      <input type="text" class="form-control" name="away_71">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="away_23">Away Odds: 24 hours </label>
+      <input type="text" class="form-control" name="away_23">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="away_47">Away Odds: 48 hours </label>
+      <input type="text" class="form-control" name="away_47">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="away_0">Away Odds: Closing</label>
+      <input type="text" class="form-control" name="away_0">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="col-md-3 mb-3">
+      <label for="draw_71">Draw Odds: Opening</label>
+      <input type="text" class="form-control" name="draw_71">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="draw_23">Draw Odds: 24 hours </label>
+      <input type="text" class="form-control" name="draw_23">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="draw_47">Draw Odds: 48 hours </label>
+      <input type="text" class="form-control" name="draw_47">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="draw_0">Draw Odds: Closing</label>
+      <input type="test" class="form-control" name="draw_0">
+    </div>
+  </div>
+  <button class="btn btn-primary" type="submit">Submit</button>
+</form>
+
+<div id="form-submit-results">
+  
+</div>
+{% endblock content %}

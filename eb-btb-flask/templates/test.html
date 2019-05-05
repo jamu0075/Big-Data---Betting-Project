@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<!-- Taken from https://getbootstrap.com/docs/4.0/components/forms/ and https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/number -->
+<form method="POST" action="{{ url_for('testResponse') }}">
+  <div class="form-row">
+    <div class="col-md-3 mb-3">
+      <label for="homeOpen">Home Odds: Opening </label>
+      <input type="text" class="form-control" name="homeOpen">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="home24">Home Odds: 24 hours </label>
+      <input type="text" class="form-control" name="home24">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="home48">Home Odds: 48 hours </label>
+      <input type="text" class="form-control" name="home48">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="homeClose">Home Odds: Closing </label>
+      <input type="text" class="form-control" name="homeClose">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="col-md-3 mb-3">
+      <label for="awayOpen">Away Odds: Opening</label>
+      <input type="text" class="form-control" name="awayOpen">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="away24">Away Odds: 24 hours </label>
+      <input type="text" class="form-control" name="away24">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="away48">Away Odds: 48 hours </label>
+      <input type="text" class="form-control" name="away48">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="awayClose">Away Odds: Closing</label>
+      <input type="text" class="form-control" name="awayClose">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="col-md-3 mb-3">
+      <label for="drawOpen">Draw Odds: Opening</label>
+      <input type="text" class="form-control" name="drawOpen">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="draw24">Draw Odds: 24 hours </label>
+      <input type="text" class="form-control" name="draw24">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="draw48">Draw Odds: 48 hours </label>
+      <input type="text" class="form-control" name="draw48">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="drawClose">Draw Odds: Closing</label>
+      <input type= "test" class="form-control" name="drawClose">
+    </div>
+  </div>
+  <button class="btn btn-primary" type="submit">Submit</button>
+</form>
+
+{% endblock content %}

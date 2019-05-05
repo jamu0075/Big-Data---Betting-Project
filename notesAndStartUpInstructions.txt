@@ -1,0 +1,78 @@
+****************************************************
+START UP INSTRUCTIONS
+
+1. cd into eb-btb-flask
+2. source virt3/bin/activate
+3. pip3 install -r requirements.txt
+4. python3 application.py
+
+Note: the application reloads automatically so don't 
+need to exit program to incorporate changes. Just
+refresh the page
+****************************************************
+
+
+****************************************************
+NOTES 
+
+1. I added imports to application.py
+2. I added requirements to requirements.txt
+3. Start up instructions should be changed to the above
+4. Right now I am doing a test train split in 
+construct_ml_model function which may not be what we
+want to do
+
+****************************************************
+
+****************************************************
+QUESTIONS
+
+1. How to construct 3xn table that I sent a picture 
+to Ryan of?
+2. Right now, there is a lot of rerouting (e.g., 
+lots of html files needed and functions in python).
+How do not do so much rerouting?
+3. How do I add new line between "Please select a league:
+<dropdown>" and the submit button?
+4. Explain to me the what's going on in erikTest.html
+and submit.html
+5. What does "methods=['GET', 'POST']" do?
+
+****************************************************
+
+****************************************************
+TECHNOLOGIES USED
+
+1. Python - numpy, matplotlib, pandas, scikit learn
+2. R - tidyverse
+3. Flask
+4. Git
+5. Pivotal
+6. AWS
+7. Javascript
+Maybe: Spark, chart.js, docker
+
+****************************************************
+
+
+****************************************************
+GENERAL PROJECT NOTES
+
+1. Shouldn't expect to be able to do better than bookies
+with simple ML model. They're odds takes into account
+a lot
+
+****************************************************
+
+
+****************************************************
+TO DOs
+
+1. Look at expected return
+
+****************************************************
+
+****************************************************
+
+
+****************************************************

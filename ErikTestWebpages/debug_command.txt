@@ -1,0 +1,1 @@
+sudo FLASK_APP=app/application.py FLASK_DEBUG=1 virtual/bin/python3 -m flask run --port 80
