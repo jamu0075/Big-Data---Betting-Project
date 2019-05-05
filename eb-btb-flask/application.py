@@ -274,5 +274,5 @@ def create_team_records_fig(team_records, team1, team2):
 if __name__ == "__main__":
     # Setting debug to True enables debug output. This line should be
     # removed before deploying a production app.
-    app.debug = True
+    # app.debug = True
     app.run()
