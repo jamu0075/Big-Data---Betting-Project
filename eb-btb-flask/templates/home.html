@@ -3,7 +3,7 @@
   <h2>Erik Test TEst asdfasdf</h2>
 
   <img src="/plot.txt" alt="my plot">
-  
+
   <h2>EU Football league betting data!<h2>
     <form class="mb-5" method="POST">
       {{ form.csrf_token }}
@@ -20,20 +20,14 @@
         {{ form.team2(class="form-control form-control-lg") }}
       </div>
       <div class="form-group">
-        {{ form.submit(class="btn btn-outline-info") }}
+        {{ form.submit(class="btn btn-outline-info") }} <!-- when you submit it does POST -->
       </div>
     </form>
 
-    <div class="container-graph">
-      {% if league %}
-        <h2>League: {{ league }}</h2>
-        <h3>Team 1: {{ team1 }}</h3>
-        <h3>Team 2: {{ team2 }}</h3>
-        {% for row in teams_record %}
-          <h4><b>Date:</b> {{ row[0] }} <b>Home:</b> {{ row[1] }} <b>Away:</b> {{ row[2] }} <b>Winner:</b> {{ row[3] }}</h4>
-        {% endfor %}
-      {% endif %}
-    </div>
+    <h2> {{ plot_title }}<h2>
+      <div>
+        <img src= "/team_records" alt="my plot1">
+      </div>
 
     <script>
       let user_league = document.getElementById('league');
@@ -56,4 +50,6 @@
         });
       }
     </script>
+    <p>
+
 {% endblock content %}
