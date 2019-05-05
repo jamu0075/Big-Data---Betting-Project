@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, Response
 from flask_wtf import FlaskForm
 from wtforms import SelectField, SubmitField
 import os
 import pymysql
 from flaskext.mysql import MySQL
+
+# Nick added these
 import numpy as np
 import pandas as pd
 import io
-import random
-from flask import Response
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
@@ -72,6 +72,7 @@ class Database:
         result = self.curs.fetchall()
         return result
 
+    # Nick added this to set global variabels
     def set_full_team_records(self, team1, team2):
         sql1 = "SELECT winning_team, closing_odds_outcome FROM outcomeFeatures2 WHERE home_team = '{}' OR away_team = '{}' ORDER BY match_date".format(team1, team1)
         self.curs.execute(sql1)
@@ -89,7 +90,7 @@ class Form(FlaskForm):
 
     submit = SubmitField('Submit')
 
-# global class
+# global class that nick created for visuals
 class Teams:
     def __init__(self):
         team_records = []
@@ -120,13 +121,11 @@ def home():
     # then passes to class='container graph" section in home html
     if request.method == 'POST':
         teams_record = myDB.get_teams_record(myForm.team1.data, myForm.team2.data)
+        # next four lines set the global variables that nick uses for visuals
         teams.team1 = myForm.team1.data
         teams.team2 = myForm.team2.data
         teams.team_records = teams_record
-        print('calling next')
         myDB.set_full_team_records(teams.team1,  teams.team2)
-        #teams.team1_full_record, teams.team2_full_record = myDB.get_full_team_records(teams.team1,  teams.team2)
-        #create_team_records_fig(team_records = teams.team_records, team1 = teams.team1, team2 = teams.team2)
         return render_template('home.html', form=myForm, league=myForm.league.data, team1=myForm.team1.data, team2=myForm.team2.data,
                                teams_record=teams_record)
 
@@ -160,7 +159,7 @@ def about():
 # Nick create this
 @app.route("/nickdev")
 def nickdev():
-    return render_template('nickdev.html', title = "Nicks Dev", plot_title = (teams.team1 + " vs. " + teams.team2))
+    return render_template('nickdev.html', plot_title = (teams.team1 + " vs. " + teams.team2))
 
 
 @app.route('/team_records')
@@ -170,14 +169,6 @@ def plot_team_records():
     output = io.BytesIO()
     FigureCanvas(fig).print_png(output)
     return Response(output.getvalue(), mimetype='image/png')
-
-## @app.route('/performance_team1')
-## def plot_performance_team():
-##     #fig = performance_of_teams_fig(teams.team1, teams.team1_full_record)
-##     fig = create_team_records_fig(teams.team_records, teams.team1, teams.team2)
-##     output = io.BytesIO()
-##     FigureCanvas(fig).print_png(output)
-##     return Response(output.getvalue(), mimetype='image/png')
 
 
 def performance_of_teams_fig(team_full_record, team1):
@@ -241,8 +232,8 @@ def create_team_records_fig(team_records, team1, team2):
         i = i+1
         print(i)
 
-    fig = plt.figure(figsize=(8, 16), tight_layout = True)
-    ax1 = fig.add_subplot(3,1,1)
+    fig = plt.figure(figsize=(8, 12), tight_layout = True)
+    ax1 = fig.add_subplot(2,1,1)
     ax1.scatter(x, y, s=sizes * 1000 * (6 - n_games), c=colors, alpha=0.4)
     ax1.set_xlim([0, n_games + 1])
     ax1.set_ylim([0, y_height + 1])
@@ -256,25 +247,64 @@ def create_team_records_fig(team_records, team1, team2):
                      horizontalalignment='center',
                      verticalalignment='center')
         i = i + 1
-    import os
-    my_path = os.getcwd()
-    url = '/static/new_plot.png'
-    #print("3 url: " + url)
-    #fig.savefig((my_path+url), bbox_inches='tight')
+    # Next plot
+    df = pd.DataFrame(data=list(teams.team1_full_record), columns = ['winning_team', 'closing_odds_outcome'])
+    n_games = len(df['winning_team'])
+    size_of_each_bet = 100
+    return_on_bet = (df['winning_team'] == team1)*df['closing_odds_outcome']*size_of_each_bet
+    winnings = np.zeros(n_games)
+    winnings[0] = -size_of_each_bet + return_on_bet.values[0]
+    i = 1
+    while i < n_games:
+        winnings[i] = winnings[i-1] - size_of_each_bet + return_on_bet.values[i]
+        i = i+1
+    x = np.linspace(1, n_games, n_games)
+    fig.add_subplot(2,1,2)
+    plt.plot(x,winnings, c = 'grey')
+    plt.hlines(y=0, xmin=0, xmax = n_games)
+    green = winnings > 0
+    colors = ['']*len(green)
+    for i in range(len(green)):
+        if green[i] == True:
+            colors[i] = 'g'
+        else:
+            colors[i] = 'r'
+    #fig = plt.figure(tight_layout = True)
+    #fig.add_subplot(1,1,1)
+    plt.scatter(x, winnings, c = colors)
 
-    fig.add_subplot(3,1,2)
-    performance_of_teams_fig(teams.team1_full_record, teams.team1)
-
-    fig.add_subplot(3,1,3)
-    performance_of_teams_fig(teams.team2_full_record, teams.team2)
+    # last scatter plot on same axes as first scatter
+    df = pd.DataFrame(data=list(teams.team2_full_record), columns = ['winning_team', 'closing_odds_outcome'])
+    n_games = len(df['winning_team'])
+    size_of_each_bet = 100
+    return_on_bet = (df['winning_team'] == team2)*df['closing_odds_outcome']*size_of_each_bet
+    winnings = np.zeros(n_games)
+    winnings[0] = -size_of_each_bet + return_on_bet.values[0]
+    i = 1
+    while i < n_games:
+        winnings[i] = winnings[i-1] - size_of_each_bet + return_on_bet.values[i]
+        i = i+1
+    x = np.linspace(1, n_games, n_games)
+    fig.add_subplot(2,1,2)
+    plt.plot(x,winnings, c = 'grey', linestyle = 'dashed')
+    plt.hlines(y=0, xmin=0, xmax = n_games)
+    green = winnings > 0
+    colors = ['']*len(green)
+    for i in range(len(green)):
+        if green[i] == True:
+            colors[i] = 'g'
+        else:
+            colors[i] = 'r'
+    #fig = plt.figure(tight_layout = True)
+    #fig.add_subplot(1,1,1)
+    plt.scatter(x, winnings, c = colors, marker = 'v')
+    plt.legend(labels = [teams.team1, teams.team2])
+    plt.title('Return when betting $100 each game', fontsize=16)
+    
     
     plt.close()
     
     return fig
-    #print('4 saved .png and closed plt')
-    #name = str(team1) + " vs. "+ str(team2)
-    #print((my_path + url))
-    #print('2 got to end of create_team_records_fig')
 
     
 
