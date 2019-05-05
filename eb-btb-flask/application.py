@@ -186,14 +186,14 @@ def create_team_records_fig(team_records, team1, team2):
     i = 0
     while i < n_games: # i is the row of df
         if df['home_team'].values[i] == team1:
-            bubble_text[i] = 'home'
+            bubble_text[i] = str(df['home_closing'].values[i]) + '\n home'
             sizes[i] = df['home_closing'].values[i]
-            bubble_text[i+n_games] = 'away'
+            bubble_text[i+n_games] = str(df['away_closing'].values[i]) + '\n away'
             sizes[i+n_games] = df['away_closing'].values[i]
         else:
-            bubble_text[i] = 'away'
+            bubble_text[i] = str(df['away_closing'].values[i]) + '\n away'
             sizes[i] = df['away_closing'].values[i]
-            bubble_text[i+n_games] = 'home'
+            bubble_text[i+n_games] = str(df['home_closing'].values[i]) + '\n home'
             sizes[i+n_games] = df['home_closing'].values[i]
         winner = df['winning_team'].values[i]
         if winner == team1:
