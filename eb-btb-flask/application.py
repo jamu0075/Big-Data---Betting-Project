@@ -28,12 +28,12 @@ from sklearn import preprocessing
 
 ######################################
 
-# EB looks for an 'app' callable by default.
-app = Flask(__name__)
+# EB looks for an 'application' callable by default.
+application = Flask(__name__)
 
 #wtf secret key
 SECRET_KEY = os.urandom(32)
-app.config['SECRET_KEY'] = SECRET_KEY
+application.config['SECRET_KEY'] = SECRET_KEY
 
 times_wanted = ['0', '23', '47', '71']
 predictors_wanted = [['draw_'+time, 'home_away_diff_'+time] for time in times_wanted]
@@ -47,11 +47,11 @@ colms_wanted_as_str = ', '.join(colms_wanted)
 # A database class to use the DB as an object
 class Database:
     def __init__(self):
-        host = os.environ['RDS_HOSTNAME']
-        port = os.environ['RDS_PORT']
-        user = os.environ['RDS_USERNAME']
-        password = os.environ['RDS_PASSWORD']
-        db = os.environ['RDS_DB_NAME']
+        host = 'btb-db-instance.cduiw3cccdch.us-east-1.rds.amazonaws.com'
+        port = 3306
+        user = 'masterUser'
+        password = 'supremedbpass2002'
+        db = 'btb-db'
 
         print('Attempting to connect...')
         try:
@@ -125,7 +125,7 @@ teams = Teams() # Nick needs this for his visuals
 #=========================================================
 
 # Home page
-@app.route("/", methods=['GET', 'POST'])
+@application.route("/", methods=['GET', 'POST'])
 def home():
     myForm = Form(request.form)
 
@@ -151,7 +151,7 @@ def home():
 
 
 #Route to handle dynamic dropdown
-@app.route('/<league>')
+@application.route('/<league>')
 def team(league):
 
     # Get teams from user inputed league
@@ -167,7 +167,7 @@ def team(league):
 
     return jsonify({'teams' : teamList})
 
-@app.route('/team_records')
+@application.route('/team_records')
 def plot_team_records():
     # fig is created in function below
     fig = create_team_records_fig(teams.team_records, teams.team1, teams.team2)
@@ -292,7 +292,7 @@ def create_team_records_fig(team_records, team1, team2):
 #########################################################
 
 # Erik's test page
-@app.route('/betting', methods=['GET', 'POST'])
+@application.route('/betting', methods=['GET', 'POST'])
 def betting_home():
 
     # Retrieve possible leagues from filtered data
@@ -305,7 +305,7 @@ def betting_home():
 
     return render_template('submit.html', data=leagues, title="Betting")
 
-@app.route("/response" , methods=['GET', 'POST'])
+@application.route("/response" , methods=['GET', 'POST'])
 def response():
 
     # Select predictors and response columns from database
@@ -328,7 +328,7 @@ def response():
     return render_template('response.html', league=league_selected)
 
 
-@app.route('/odds_form_on_submit/<string:league>', methods=['POST'])
+@application.route('/odds_form_on_submit/<string:league>', methods=['POST'])
 def odds_form_on_submit(league):
 # @app.route('/test_form_submit', methods=['POST'])
 # def test_form_submit():
@@ -396,7 +396,7 @@ def odds_form_on_submit(league):
         f1_low_odds=round(f1_low_odds, 2)
         )
 
-@app.route('/conf_mat.txt/<string:league>')
+@application.route('/conf_mat.txt/<string:league>')
 def generate_conf_mat(league):
     sql = "SELECT {} FROM filteredMatches WHERE league = '{}'".format(colms_wanted_as_str, league)
     df = pd.read_sql(sql, myDB.conn)
@@ -550,5 +550,5 @@ def construct_ml_features_from_input(X_test):
 if __name__ == "__main__":
     # Setting debug to True enables debug output. This line should be
     # removed before deploying a production app.
-    app.debug = True
-    app.run()
+    # application.debug = True
+    application.run()
