@@ -24,6 +24,7 @@ from sklearn.metrics import confusion_matrix, accuracy_score, f1_score
 from sklearn import svm, datasets
 from sklearn.utils.multiclass import unique_labels
 from sklearn.externals import joblib
+from sklearn import preprocessing
 
 ######################################
 
@@ -35,11 +36,13 @@ SECRET_KEY = os.urandom(32)
 app.config['SECRET_KEY'] = SECRET_KEY
 
 times_wanted = ['0', '23', '47', '71']
-predictors_wanted = [['home_'+time, 'away_'+time, 'draw_'+time] for time in times_wanted]
+predictors_wanted = [['draw_'+time, 'home_away_diff_'+time] for time in times_wanted]
 predictors_wanted = [item for sublist in predictors_wanted for item in sublist]
 colms_wanted = predictors_wanted.copy()
 colms_wanted.append('outcome')
+colms_wanted.append('league')
 colms_wanted_as_str = ', '.join(colms_wanted)
+
 
 # A database class to use the DB as an object
 class Database:
@@ -312,6 +315,7 @@ def response():
     sql = "SELECT {} FROM filteredMatches WHERE league = '{}'".format(colms_wanted_as_str, league_selected)
     df = pd.read_sql(sql, myDB.conn)
     df = df[colms_wanted] # make sure order of columns is consistent
+    # print(df)
 
     # Split the data into a training set and a test set
     # below keep random_state=0 for testing so get same thing everytime
@@ -335,24 +339,50 @@ def odds_form_on_submit(league):
     results_dict = dict((key, convert_str_to_float(value)) for key, value in results_dict.items())
 
     X_test = pd.DataFrame(results_dict, index=[0])
-    X_test = X_test[predictors_wanted]
-
-    classifier = joblib.load('model.pkl')
-    prediction = classifier.predict(X_test)[0]
+    # X_test = X_test[predictors_wanted]
+    X_test = construct_ml_features_from_input(X_test)
 
     sql = "SELECT {} FROM filteredMatches WHERE league = '{}'".format(colms_wanted_as_str, league)
     df = pd.read_sql(sql, myDB.conn)
     df = df[colms_wanted]
 
-    X = df.drop('outcome', axis=1)
+    X = df.drop(['outcome', 'league'], axis=1)
     y = df['outcome']
 
+    for colm in predictors_wanted:
+#    print(pd.qcut(X[colm], q=[0, 0.25, 0.75, 1], labels=['low', 'med', 'high']))
+        quantiles = np.quantile(X[colm], q=[0.25, 0.75])
+        value = X_test[colm][0]
+        if value<=quantiles[0]:
+            X_test[colm] = "low"
+        elif (value>quantiles[0] and value<=quantiles[1]):
+            X_test[colm] = "med"
+        elif value>quantiles[1]:
+            X_test[colm] = "high"
 
-    y_low_odds = predict_lowest_closing_odds(X)
+        X[colm] = pd.qcut(X[colm], q=[0, 0.25, 0.75, 1], labels=['low', 'med', 'high'])
+
+    X_ordinal = X.values
+    X_test_ordinal = X_test.values
+
+# les = []
+    for i in range(X_ordinal.shape[1]):
+        le = preprocessing.LabelEncoder()
+        le.fit(X_ordinal[:,i])
+        # les.append(le)
+        X_ordinal[:,i] = le.transform(X_ordinal[:,i])
+        X_test_ordinal[:,i] = le.transform(X_test_ordinal[:,i])
+
+    sql = "SELECT {} FROM filteredMatches WHERE league = '{}'".format("home_0, away_0, draw_0", league)
+    X_for_lowest_odds_bet = pd.read_sql(sql, myDB.conn)
+    y_low_odds = predict_lowest_closing_odds(X_for_lowest_odds_bet)
+
+    classifier = joblib.load('model.pkl')
+    prediction = classifier.predict(X_test)[0]
+
     acc_low_odds = accuracy_score(y, y_low_odds)
-    acc_rf = cross_val_score(classifier, X, y, cv=num_folds).mean()
-
-    f1_rf = cross_val_score(classifier, X, y, cv=num_folds, scoring='f1_weighted').mean()
+    acc_rf = cross_val_score(classifier, X_ordinal, y, cv=num_folds).mean()
+    f1_rf = cross_val_score(classifier, X_ordinal, y, cv=num_folds, scoring='f1_weighted').mean()
     f1_low_odds = f1_score(y, y_low_odds, average='weighted')
 
     return render_template('partials/oddsFormResults.html',
@@ -370,7 +400,7 @@ def odds_form_on_submit(league):
 def generate_conf_mat(league):
     sql = "SELECT {} FROM filteredMatches WHERE league = '{}'".format(colms_wanted_as_str, league)
     df = pd.read_sql(sql, myDB.conn)
-    df = df[colms_wanted]
+    df = df[colms_wanted] 
     fig = create_conf_mat(league, df)
     output = io.BytesIO()
     FigureCanvas(fig).print_png(output)
@@ -386,13 +416,25 @@ def convert_str_to_float(value):
         return 0.0
 
 def create_conf_mat(league, df, num_folds=20):
-    X = df.drop('outcome', axis=1)
+    X = df.drop(['outcome', 'league'], axis=1)
     y = df['outcome']
+
+    for colm in predictors_wanted:
+#    print(pd.qcut(X[colm], q=[0, 0.25, 0.75, 1], labels=['low', 'med', 'high']))
+        X[colm] = pd.qcut(X[colm], q=[0, 0.25, 0.75, 1], labels=['low', 'med', 'high'])
+
+    X_ordinal = X.values
+# les = []
+    for i in range(X_ordinal.shape[1]):
+        le = preprocessing.LabelEncoder()
+        le.fit(X_ordinal[:,i])
+        # les.append(le)
+        X_ordinal[:,i] = le.transform(X_ordinal[:,i])
     class_names = unique_labels(y)
 
     classifier = joblib.load('model.pkl')
 
-    y_pred = cross_val_predict(classifier, X, y, cv=num_folds)
+    y_pred = cross_val_predict(classifier, X_ordinal, y, cv=num_folds)
 
     fig = plot_confusion_matrix(y, y_pred, classes=class_names, normalize=False)
 
@@ -405,14 +447,27 @@ def construct_random_forest_model(df):
     num_folds = 10 # number of cross-validation folds
 
     # Construct X and y matrices for ML
-    X = df.drop('outcome', axis=1)
+    # X = df.drop('outcome', axis=1)
+    X = df.drop(['outcome', 'league'], axis=1)
     y = df['outcome']
 
+    for colm in predictors_wanted:
+#    print(pd.qcut(X[colm], q=[0, 0.25, 0.75, 1], labels=['low', 'med', 'high']))
+        X[colm] = pd.qcut(X[colm], q=[0, 0.25, 0.75, 1], labels=['low', 'med', 'high'])
+
+    X_ordinal = X.values
+# les = []
+    for i in range(X_ordinal.shape[1]):
+        le = preprocessing.LabelEncoder()
+        le.fit(X_ordinal[:,i])
+        # les.append(le)
+        X_ordinal[:,i] = le.transform(X_ordinal[:,i])
+    
     rf_clf = RandomForestClassifier(n_estimators=num_trees)
 
     # y_pred = cross_val_predict(rf_clf, X, y, cv=num_folds)
 
-    rf_clf.fit(X, y)
+    rf_clf.fit(X_ordinal, y)
 
     # Save model
     joblib.dump(rf_clf, 'model.pkl')
@@ -482,6 +537,12 @@ def plot_confusion_matrix(y_true, y_pred, classes,
     fig.tight_layout()
     return fig
 
+def construct_ml_features_from_input(X_test):
+    for time in times_wanted:
+        X_test['home_away_diff_'+time] = X_test['home_'+time] - X_test['away_'+time]
+
+    return(X_test[predictors_wanted])
+
 ######################################################################
 ######################################################################
 
@@ -489,5 +550,5 @@ def plot_confusion_matrix(y_true, y_pred, classes,
 if __name__ == "__main__":
     # Setting debug to True enables debug output. This line should be
     # removed before deploying a production app.
-    # app.debug = True
+    app.debug = True
     app.run()
