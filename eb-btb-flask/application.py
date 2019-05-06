@@ -47,11 +47,11 @@ colms_wanted_as_str = ', '.join(colms_wanted)
 # A database class to use the DB as an object
 class Database:
     def __init__(self):
-        host = 'btb-db-instance.cduiw3cccdch.us-east-1.rds.amazonaws.com'
-        port = 3306
-        user = 'masterUser'
-        password = 'supremedbpass2002'
-        db = 'btb-db'
+        host = os.environ['RDS_HOSTNAME']
+        port = os.environ['RDS_PORT']
+        user = os.environ['RDS_USERNAME']
+        password = os.environ['RDS_PASSWORD']
+        db = os.environ['RDS_DB_NAME']
 
         print('Attempting to connect...')
         try:
@@ -400,7 +400,7 @@ def odds_form_on_submit(league):
 def generate_conf_mat(league):
     sql = "SELECT {} FROM filteredMatches WHERE league = '{}'".format(colms_wanted_as_str, league)
     df = pd.read_sql(sql, myDB.conn)
-    df = df[colms_wanted] 
+    df = df[colms_wanted]
     fig = create_conf_mat(league, df)
     output = io.BytesIO()
     FigureCanvas(fig).print_png(output)
@@ -462,7 +462,7 @@ def construct_random_forest_model(df):
         le.fit(X_ordinal[:,i])
         # les.append(le)
         X_ordinal[:,i] = le.transform(X_ordinal[:,i])
-    
+
     rf_clf = RandomForestClassifier(n_estimators=num_trees)
 
     # y_pred = cross_val_predict(rf_clf, X, y, cv=num_folds)
