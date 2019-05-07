@@ -11,7 +11,7 @@
 1. cd into **eb-btb-flask**
 2. Activate the virtual environment to prevent version conflicts
 ```
-source virt/bin/activate
+source virt3/bin/activate
 ```
 3. Download the required dependencies
 ```
@@ -33,6 +33,7 @@ dbname = '[DBNAME]'
 ## Project Summary
 
 ## Current Deployment Link
+http://btbdeployment2-env.nmcjnh5dai.us-east-1.elasticbeanstalk.com/
 
 ## Datasets We Are Using
 
